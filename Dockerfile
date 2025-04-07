@@ -7,7 +7,8 @@ COPY . .
 
 RUN ./gradlew clean build -x test
 
-RUN ls -la /app/build/libs/  # JAR 파일 확인용 명령어
+RUN ls -la /app/build/libs/
+
 
 # Stage 2: Run
 FROM amazoncorretto:17
