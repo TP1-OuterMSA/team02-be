@@ -32,6 +32,13 @@ public class Heart {
 	@JoinColumn(name = "post_id")
 	private Post post;
 
+	public static Heart of(User user, Post post) {
+		return Heart.builder()
+			.user(user)
+			.post(post)
+			.build();
+	}
+
 	@Override
 	public boolean equals(Object object) {
 		if (!(object instanceof Heart Heart)) {
