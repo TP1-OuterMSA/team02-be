@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("/api/team2/comment")
 @RequiredArgsConstructor
 public class CommentController {
 	private final CommentService commentService;

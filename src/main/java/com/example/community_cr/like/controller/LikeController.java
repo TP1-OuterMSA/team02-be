@@ -12,7 +12,7 @@ import com.example.community_cr.like.repository.LikeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/community")
+@RequestMapping("/api/team2/community")
 @RequiredArgsConstructor
 public class LikeController {
 	private final LikeService likeService;
