@@ -12,8 +12,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("MJ Cafeteria Feedback API")
-                        .description("명지대학교 학생 식당 피드백 API 명세서")
+                        .title("API")
+                        .description("API")
                         .version("1.0.0")
                 );
     }
