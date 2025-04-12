@@ -53,4 +53,8 @@ public class Post {
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Builder.Default
 	private List<Comment> commentList = new ArrayList<>();
+
+	public void updateImageFileName(String imageFileName) {
+		this.imageFileName = imageFileName;
+	}
 }

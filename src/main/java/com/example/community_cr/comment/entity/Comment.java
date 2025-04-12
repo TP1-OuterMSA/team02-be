@@ -40,4 +40,9 @@ public class Comment {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id")
 	private Post post;
+
+	public void updateContent(String content) {
+		this.content = content;
+	}
+
 }

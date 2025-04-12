@@ -14,24 +14,23 @@ import lombok.Setter;
 @Getter
 @Builder
 public class PostDetailResponse {
-	public long id;
-	
+	private long id;
+	private long userId;
 	@Setter
-	public String image;
-
-	public String title;
-
-	public String content;
+	private String image;
+	private String title;
+	private String content;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-	public LocalDateTime createdAt;
-	public int likeCount;
-	public int commentCount;
-	public List<CommentResponse> commentResponseList;
-	private Long userId;
+	private LocalDateTime createdAt;
+	private int likeCount;
+	private int commentCount;
+	private List<CommentResponse> commentResponseList;
+	private boolean likeStatus;
 
-	public static PostDetailResponse from(Post post) {
+	public static PostDetailResponse from(Post post, boolean likeStatus) {
 		return PostDetailResponse.builder()
 			.id(post.getId())
+			.userId(post.getUser().getId())
 			.image(post.getImageFileName())
 			.title(post.getTitle())
 			.content(post.getContent())
@@ -43,7 +42,7 @@ public class PostDetailResponse {
 					.map(CommentResponse::from)
 					.toList()
 			)
-			.userId(post.getUser().getId())
+			.likeStatus(likeStatus)
 			.build();
 	}
 }
