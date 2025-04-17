@@ -5,8 +5,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -18,7 +21,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
+import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.controller.dto.response.api.Nutrition.IdntList;
 import com.example.community_cr.diet.controller.dto.response.api.Nutrition.NutritionApiResponse;
 import com.example.community_cr.diet.controller.dto.response.api.Nutrition.NutritionItem;
 import com.example.community_cr.diet.controller.dto.response.api.food.FoodApiResponse;
@@ -74,14 +79,15 @@ public class FoodServiceImpl implements FoodService {
 
 	@Override
 	public List<FoodResponse> getFoods(int pageNo, int pageSize, String foodName) {
-		String apiUrl = String.format(
+		// 메뉴 조회
+		String foodApiUrl = String.format(
 			"%s%s",
 			apiBase,
 			apiFoodPath
 		);
 		String encodedFoodName = UriUtils.encode(foodName, StandardCharsets.UTF_8);
 
-		String uri = UriComponentsBuilder.fromUriString(apiUrl)
+		String uri = UriComponentsBuilder.fromUriString(foodApiUrl)
 			.queryParam("service_Type", "json")
 			.queryParam("Page_No", pageNo)
 			.queryParam("Page_Size", pageSize)
@@ -89,42 +95,48 @@ public class FoodServiceImpl implements FoodService {
 			.queryParam("serviceKey", apiKey)
 			.build(true)
 			.toUriString();
-		return getFoodResponseFromUrl(uri);
+
+		List<FoodResponse> foodResponses = getFoodResponseFromUrl(uri);
+
+		// 메뉴별 영양 성분 조회 (칼로리 확인을 위해)
+		List<String> foodCodes = foodResponses.stream()
+			.map(FoodResponse::getFoodCode)
+			.toList();
+		List<NutritionItem> nutritionItems = getNutritionItems(foodCodes);
+
+		Map<String, NutritionItem> nutritionMap = nutritionItems.stream()
+			.collect(Collectors.toMap(NutritionItem::getMainFoodCode, Function.identity()));
+
+		foodResponses.forEach(foodResponse -> {
+			NutritionItem matched = nutritionMap.get(foodResponse.getFoodCode());
+			if (matched != null) {
+				double matchedFoodWeight = matched.getIdntLists().stream()
+					.mapToDouble(IdntList::getFoodWeight)
+					.sum();
+				double matchedKcal = matched.getIdntLists().stream()
+					.mapToDouble(IdntList::getEnergyQy)
+					.sum();
+				double kcal =
+					(foodResponse.getFoodWeight() / matchedFoodWeight) * matchedKcal;
+				foodResponse.setKcal(kcal);
+			}
+		});
+
+		return foodResponses;
 	}
 
 	@Override
-	public void saveNutrition(List<String> foodCodes) {
-		String apiUrl = String.format(
-			"%s%s",
-			apiBase,
-			apiNutritionPath
-		);
-
+	public void saveNutrition(List<FoodRequest> foodRequests) {
+		List<String> foodCodes = foodRequests.stream()
+			.map(FoodRequest::getFoodCode)
+			.toList();
 		List<String> existingFoodCodes = foodRepository.findExistingFoodCodes(foodCodes);
 
 		List<String> notFoundFoodCodes = foodCodes.stream()
 			.filter(foodCode -> !existingFoodCodes.contains(foodCode))
 			.toList();
 
-		List<String> uris = notFoundFoodCodes.stream()
-			.map(foodCode -> UriComponentsBuilder.fromUriString(apiUrl)
-				.queryParam("serviceKey", apiKey)
-				.queryParam("food_Code", foodCode)
-				.build(true)
-				.toUriString())
-			.toList();
-
-		List<CompletableFuture<NutritionApiResponse>> futures = uris.stream()
-			.map(this::fetchData)
-			.toList();
-
-		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-		List<Food> foods = futures.stream()
-			.map(CompletableFuture::join)
-			.map(NutritionApiResponse::getNutritionBody)
-			.map(NutritionApiResponse.NutritionBody::getNutritionItems)
-			.map(NutritionApiResponse.NutritionItems::getNutritionItem)
+		List<Food> foods = getNutritionItems(notFoundFoodCodes).stream()
 			.map(NutritionItem::toEntity)
 			.toList();
 
@@ -159,9 +171,38 @@ public class FoodServiceImpl implements FoodService {
 			.toList();
 	}
 
+	private List<NutritionItem> getNutritionItems(List<String> foodCodes) {
+		String nutritionApiUrl = String.format(
+			"%s%s",
+			apiBase,
+			apiNutritionPath
+		);
+
+		List<String> uris = foodCodes.stream()
+			.map(foodCode -> UriComponentsBuilder.fromUriString(nutritionApiUrl)
+				.queryParam("serviceKey", apiKey)
+				.queryParam("food_Code", foodCode)
+				.build(true)
+				.toUriString())
+			.toList();
+
+		List<CompletableFuture<NutritionApiResponse>> futures = uris.stream()
+			.map(this::getNutritionApiResponseFromUrl)
+			.toList();
+
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+		return futures.stream()
+			.map(CompletableFuture::join)
+			.map(NutritionApiResponse::getNutritionBody)
+			.map(NutritionApiResponse.NutritionBody::getNutritionItems)
+			.map(NutritionApiResponse.NutritionItems::getNutritionItem)
+			.toList();
+	}
+
 	// 병렬적으로 url 수행하는 메서드
 	@Async
-	protected CompletableFuture<NutritionApiResponse> fetchData(String url) {
+	protected CompletableFuture<NutritionApiResponse> getNutritionApiResponseFromUrl(String url) {
 		ResponseEntity<String> response;
 		try {
 			response =
@@ -183,6 +224,7 @@ public class FoodServiceImpl implements FoodService {
 		} catch (JAXBException e) {
 			throw new IllegalArgumentException(e);
 		}
+
 		return CompletableFuture.completedFuture(nutritionApiResponse);
 	}
 }

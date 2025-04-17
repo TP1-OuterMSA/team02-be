@@ -1,6 +1,7 @@
 package com.example.community_cr.diet.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -19,5 +20,8 @@ public interface DietRepository extends JpaRepository<Diet, Long> {
 
 	@Query("SELECT d FROM Diet d WHERE d.user.id = ?1 AND d.id <= ?2 ORDER BY d.date DESC")
 	Slice<Diet> findNextPagePosts(long userId, long cursor, PageRequest pageRequest);
+
+	@Query("SELECT DISTINCT d.date FROM Diet d WHERE d.date BETWEEN ?1 AND ?2 ORDER BY d.date DESC")
+	List<LocalDate> findDietDatesBetween(LocalDate startDate, LocalDate endDate);
 }
 

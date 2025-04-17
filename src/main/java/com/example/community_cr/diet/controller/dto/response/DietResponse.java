@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.example.community_cr.diet.entity.Diet;
-import com.example.community_cr.diet.entity.DietFood;
 import com.example.community_cr.diet.entity.MealType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -20,16 +19,18 @@ public class DietResponse {
 	private LocalDate date;
 	private MealType type;
 	private List<FoodDto> foods;
+	private double recommendKcal;
 
-	public static DietResponse from(Diet diet) {
+	public static DietResponse from(Diet diet, double recommendKcal) {
 		return DietResponse.builder()
 			.id(diet.getId())
 			.date(diet.getDate())
 			.type(diet.getType())
 			.foods(diet.getFoods().stream()
-				.map(DietFood::getFood)
-				.map(food -> new FoodDto(food.getFoodName(), food.getFoodCode()))
+				.map(food -> new FoodDto(food.getFood().getFoodName(), food.getFood().getFoodCode(),
+					food.getIntakeKcal()))
 				.toList())
+			.recommendKcal(recommendKcal)
 			.build();
 	}
 
@@ -38,5 +39,6 @@ public class DietResponse {
 	public static class FoodDto {
 		private String foodName;
 		private String foodCode;
+		private Double intakeKcal;
 	}
 }

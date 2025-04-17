@@ -19,4 +19,10 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+
+	private Double recommendKcal;
+
+	public void updateRecommendKcal(double recommendKcal) {
+		this.recommendKcal = recommendKcal;
+	}
 }
