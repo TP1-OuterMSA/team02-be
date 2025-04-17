@@ -1,10 +1,16 @@
 package com.example.community_cr.diet.repository;
 
-import com.example.community_cr.diet.entity.Food;
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.example.community_cr.diet.entity.Food;
 
 public interface FoodRepository extends JpaRepository<Food, Long> {
-    Optional<Food> findByFoodCode(String foodCode);
+	List<Food> findAllByFoodCodeIn(List<String> foods);
+
+	@Query("SELECT f.foodCode FROM Food f WHERE f.foodCode IN :foodCodes")
+	List<String> findExistingFoodCodes(@Param("foodCodes") List<String> foodCodes);
 }

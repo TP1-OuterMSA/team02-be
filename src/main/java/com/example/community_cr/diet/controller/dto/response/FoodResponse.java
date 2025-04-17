@@ -1,4 +1,6 @@
-package com.example.community_cr.food.controller.dto;
+package com.example.community_cr.diet.controller.dto.response;
+
+import com.example.community_cr.diet.controller.dto.response.api.food.FoodItem;
 
 import lombok.Builder;
 import lombok.Getter;
