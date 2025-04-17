@@ -1,26 +1,24 @@
 package com.example.community_cr.diet.controller.dto.request;
 
-import com.example.community_cr.diet.entity.MealType;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import com.example.community_cr.diet.entity.MealType;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 public class DietRequest {
-    private LocalDate date;
-    private List<MealRequest> meals;
+	@NotNull(message = "날짜를 입력해주세요")
+	private LocalDate date;
 
-    @Getter @Setter
-    public static class MealRequest {
-        private MealType type;
-        private List<FoodRequest> foods;
-    }
+	@NotNull
+	private MealType mealType;
 
-    @Getter @Setter
-    public static class FoodRequest {
-        private String foodCode;
-    }
+	@NotEmpty(message = "최소 1개 이상의 음식 코드가 필요합니다.")
+	private List<String> foods;
 }
