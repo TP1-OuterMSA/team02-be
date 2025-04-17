@@ -9,7 +9,7 @@ import com.example.community_cr.diet.controller.dto.response.DietResponse;
 public interface DietService {
 	Optional<DietResponse> saveDiet(long userId, DietRequest dto);
 
-	Optional<DietResponse> getDiet(long dietId);
+	Optional<DietResponse> getDiet(long userId, long dietId);
 
 	List<DietResponse> getDiets(long userId, long cursor, int count);
 }

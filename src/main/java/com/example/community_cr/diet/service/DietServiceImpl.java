@@ -69,9 +69,12 @@ public class DietServiceImpl implements DietService {
 	}
 
 	@Override
-	public Optional<DietResponse> getDiet(long dietId) {
+	public Optional<DietResponse> getDiet(long userId, long dietId) {
 		Diet diet = dietRepository.findById(dietId)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단 ID입니다."));
+		if (diet.getUser().getId() != userId) {
+			throw new IllegalArgumentException("자신의 식단만 조회할 수 있습니다.");
+		}
 		return Optional.of(DietResponse.from(diet));
 	}
 

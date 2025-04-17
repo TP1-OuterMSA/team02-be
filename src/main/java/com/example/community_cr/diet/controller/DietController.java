@@ -40,8 +40,9 @@ public class DietController {
 
 	@GetMapping("/getDiet")
 	public ResponseEntity<DietResponse> getDiet(
+		@RequestHeader("user-id") long userId,
 		@RequestParam("dietId") long dietId) {
-		Optional<DietResponse> response = dietService.getDiet(dietId);
+		Optional<DietResponse> response = dietService.getDiet(userId, dietId);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
 	}
