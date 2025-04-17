@@ -23,9 +23,7 @@ public class DietFood {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
-	private double weightInGrams;
-
-	private double kcal;
+	private double intakeKcal;
 
 	@ManyToOne
 	@JoinColumn(name = "diet_id")
@@ -35,10 +33,9 @@ public class DietFood {
 	@JoinColumn(name = "food_id")
 	private Food food;
 
-	public static DietFood from(double weightInGrams, double kcal, Diet diet, Food food) {
+	public static DietFood from(double intakeKcal, Diet diet, Food food) {
 		return DietFood.builder()
-			.weightInGrams(weightInGrams)
-			.kcal(kcal)
+			.intakeKcal(intakeKcal)
 			.diet(diet)
 			.food(food)
 			.build();

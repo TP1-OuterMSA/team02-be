@@ -12,7 +12,10 @@ public class FoodResponse {
 	private String upperFoodGroupName;
 	private String foodGroupName;
 	private String foodName;
-	private String foodWeight;
+	private double foodWeight;
+
+	@Builder.Default
+	private Double kcal = null;
 
 	public static FoodResponse from(FoodItem foodItem) {
 		return FoodResponse.builder()
@@ -22,5 +25,9 @@ public class FoodResponse {
 			.foodName(foodItem.getFd_Nm())
 			.foodWeight(foodItem.getFd_Wgh())
 			.build();
+	}
+
+	public void setKcal(double kcal) {
+		this.kcal = kcal;
 	}
 }

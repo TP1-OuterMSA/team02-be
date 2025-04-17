@@ -1,5 +1,7 @@
 package com.example.community_cr.diet.service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +14,6 @@ public interface DietService {
 	Optional<DietResponse> getDiet(long userId, long dietId);
 
 	List<DietResponse> getDiets(long userId, long cursor, int count);
+
+	List<LocalDate> getDietDates(long userId, YearMonth month);
 }

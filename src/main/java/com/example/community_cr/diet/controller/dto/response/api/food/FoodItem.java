@@ -15,7 +15,7 @@ public class FoodItem {
 	private String upper_Fd_Grupp_Nm;
 	private String fd_Grupp_Nm;
 	private String fd_Nm;
-	private String fd_Wgh;
-	private String food_Cnt;
+	private double fd_Wgh;
+	private double food_Cnt;
 	private String image_Address;
 }

@@ -1,8 +1,13 @@
 package com.example.community_cr.diet.controller;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +36,8 @@ public class DietController {
 	@PostMapping("/saveDiet")
 	public ResponseEntity<DietResponse> createDiet(
 		@RequestHeader("user-id") long userId,
-		@RequestBody @Valid DietRequest dto) {
+		@RequestBody @Valid DietRequest dto
+	) {
 		foodService.saveNutrition(dto.getFoods());
 		Optional<DietResponse> response = dietService.saveDiet(userId, dto);
 		return ResponseEntity.ok(
@@ -41,7 +47,8 @@ public class DietController {
 	@GetMapping("/getDiet")
 	public ResponseEntity<DietResponse> getDiet(
 		@RequestHeader("user-id") long userId,
-		@RequestParam("dietId") long dietId) {
+		@RequestParam("dietId") long dietId
+	) {
 		Optional<DietResponse> response = dietService.getDiet(userId, dietId);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
@@ -51,7 +58,8 @@ public class DietController {
 	public ResponseEntity<List<DietResponse>> getDiets(
 		@RequestHeader("user-id") long userId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
-		@RequestParam(name = "count", required = false, defaultValue = "4") int count) {
+		@RequestParam(name = "count", required = false, defaultValue = "4") int count
+	) {
 		return ResponseEntity.ok(
 			dietService.getDiets(userId, cursor, count));
 	}
@@ -60,7 +68,8 @@ public class DietController {
 	public ResponseEntity<List<FoodResponse>> getFoods(
 		@RequestParam("pageNo") final int pageNo,
 		@RequestParam("pageSize") final int pageSize,
-		@RequestParam(name = "foodName", required = false) Optional<String> foodName) {
+		@RequestParam(name = "foodName", required = false) Optional<String> foodName
+	) {
 		List<FoodResponse> foodResponses;
 		if (foodName.isPresent()) {
 			foodResponses = foodService.getFoods(pageNo, pageSize, foodName.get());
@@ -68,6 +77,18 @@ public class DietController {
 			foodResponses = foodService.getFoods(pageNo, pageSize);
 		}
 		return ResponseEntity.ok(foodResponses);
+	}
+
+	@GetMapping("/getDietDates")
+	public ResponseEntity<List<String>> getDietDates(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("month") @DateTimeFormat(pattern = "yyyy-MM") YearMonth month
+	) {
+		List<LocalDate> dates = dietService.getDietDates(userId, month);
+
+		return ResponseEntity.ok(dates.stream()
+			.map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)) // yyyy-MM-dd
+			.collect(Collectors.toList()));
 	}
 
 }

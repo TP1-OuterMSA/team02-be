@@ -1,5 +1,7 @@
 package com.example.community_cr.diet.controller.dto.response.api.Nutrition;
 
+import java.util.List;
+
 import com.example.community_cr.diet.entity.Food;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -19,13 +21,19 @@ public class NutritionItem {
 	private String mainFoodName;
 
 	@XmlElement(name = "idnt_List")
-	private IdntList idntList;
+	private List<IdntList> idntLists;
 
 	public Food toEntity() {
 		return Food.builder()
-			.protein(idntList.getProtein())
-			.carb(idntList.getCarbohydrate())
-			.fat(idntList.getFattyAcid())
+			.protein(idntLists.stream()
+				.mapToDouble(IdntList::getProtein)
+				.sum())
+			.carb(idntLists.stream()
+				.mapToDouble(IdntList::getCarbohydrate)
+				.sum())
+			.fat(idntLists.stream()
+				.mapToDouble(IdntList::getFattyAcid)
+				.sum())
 			.foodCode(mainFoodCode)
 			.foodName(mainFoodName)
 			.build();
