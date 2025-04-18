@@ -27,7 +27,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/community")
+@RequestMapping("/api/team2/community")
 @RequiredArgsConstructor
 public class CommunityController {
 	private final CommunityService communityService;

@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/diet")
+@RequestMapping("/api/team2/diet")
 public class DietController {
 	private final DietService dietService;
 	private final FoodService foodService;
