@@ -25,6 +25,9 @@ public class NutritionItem {
 
 	public Food toEntity() {
 		return Food.builder()
+			.foodWeight(idntLists.stream()
+				.mapToDouble(IdntList::getFoodWeight)
+				.sum())
 			.protein(idntLists.stream()
 				.mapToDouble(IdntList::getProtein)
 				.sum())
@@ -33,6 +36,9 @@ public class NutritionItem {
 				.sum())
 			.fat(idntLists.stream()
 				.mapToDouble(IdntList::getFattyAcid)
+				.sum())
+			.kcal(idntLists.stream()
+				.mapToDouble(IdntList::getEnergyQy)
 				.sum())
 			.foodCode(mainFoodCode)
 			.foodName(mainFoodName)

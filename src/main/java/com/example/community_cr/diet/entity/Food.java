@@ -29,6 +29,7 @@ public class Food {
 	private String foodName;
 
 	//칼로리,탄단지 이외 추가 요소 필요
+	private double foodWeight;
 	private double kcal;
 	private double protein;
 	private double fat;

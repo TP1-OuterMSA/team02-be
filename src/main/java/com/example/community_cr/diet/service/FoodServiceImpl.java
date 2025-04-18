@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -67,14 +69,16 @@ public class FoodServiceImpl implements FoodService {
 			apiFoodPath
 		);
 
-		String url = UriComponentsBuilder.fromUriString(apiUrl)
+		String uri = UriComponentsBuilder.fromUriString(apiUrl)
 			.queryParam("service_Type", "json")
 			.queryParam("Page_No", pageNo)
 			.queryParam("Page_Size", pageSize)
 			.queryParam("serviceKey", apiKey)
 			.build(true)
 			.toUriString();
-		return getFoodResponseFromUrl(url);
+
+		List<FoodResponse> foodResponses = getFoodResponseFromUrl(uri);
+		return setFoodResponsesKcal(foodResponses);
 	}
 
 	@Override
@@ -97,7 +101,10 @@ public class FoodServiceImpl implements FoodService {
 			.toUriString();
 
 		List<FoodResponse> foodResponses = getFoodResponseFromUrl(uri);
+		return setFoodResponsesKcal(foodResponses);
+	}
 
+	private List<FoodResponse> setFoodResponsesKcal(List<FoodResponse> foodResponses) {
 		// 메뉴별 영양 성분 조회 (칼로리 확인을 위해)
 		List<String> foodCodes = foodResponses.stream()
 			.map(FoodResponse::getFoodCode)
@@ -157,10 +164,20 @@ public class FoodServiceImpl implements FoodService {
 			ObjectMapper objectMapper = new ObjectMapper();
 			foodApiResponse = objectMapper.readValue(response.getBody(), FoodApiResponse.class);
 		} catch (JsonProcessingException e) {
-			if (response.getStatusCode().is2xxSuccessful()) {
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				throw new IllegalStateException("외부 API 요청 중 문제가 생겼습니다.");
+			}
+
+			assert response.getBody() != null;
+			Pattern pattern = Pattern.compile("<returnReasonCode>(\\d+)</returnReasonCode>");
+			Matcher matcher = pattern.matcher(response.getBody());
+
+			if (matcher.find()) {
+				String code = matcher.group(1);
+				throw new IllegalArgumentException("에러 코드 : " + code);
+			} else {
 				return List.of();
 			}
-			throw new IllegalStateException(response.getBody());
 		}
 
 		assert foodApiResponse != null;
