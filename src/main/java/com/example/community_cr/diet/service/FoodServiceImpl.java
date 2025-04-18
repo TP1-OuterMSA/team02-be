@@ -149,7 +149,7 @@ public class FoodServiceImpl implements FoodService {
 			response =
 				restTemplate.exchange(new URI(uri), HttpMethod.GET, null, String.class);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException();
+			throw new IllegalStateException("외부 API 요청 중 URL 생성에 문제가 생겼습니다.");
 		}
 
 		FoodApiResponse foodApiResponse;
@@ -158,9 +158,9 @@ public class FoodServiceImpl implements FoodService {
 			foodApiResponse = objectMapper.readValue(response.getBody(), FoodApiResponse.class);
 		} catch (JsonProcessingException e) {
 			if (response.getStatusCode().is2xxSuccessful()) {
-				throw new IllegalArgumentException("해당하는 음식 정보가 존재하지 않습니다.");
+				return List.of();
 			}
-			throw new IllegalArgumentException();
+			throw new IllegalStateException(response.getBody());
 		}
 
 		assert foodApiResponse != null;
@@ -188,6 +188,7 @@ public class FoodServiceImpl implements FoodService {
 
 		List<CompletableFuture<NutritionApiResponse>> futures = uris.stream()
 			.map(this::getNutritionApiResponseFromUrl)
+			.filter(Objects::nonNull)
 			.toList();
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -208,21 +209,21 @@ public class FoodServiceImpl implements FoodService {
 			response =
 				restTemplate.exchange(new URI(url), HttpMethod.GET, null, String.class);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalStateException("외부 API 요청 중 URL 생성에 문제가 생겼습니다.");
 		}
 
 		NutritionApiResponse nutritionApiResponse;
 		try {
-			JAXBContext context = JAXBContext.newInstance(NutritionApiResponse.class);
-			Unmarshaller unmarshaller = context.createUnmarshaller();
 			if (!response.getStatusCode().is2xxSuccessful()) {
 				throw new IllegalArgumentException("응답을 받아오는데 실패했습니다.");
 			}
 			StringReader reader = new StringReader(Objects.requireNonNull(response.getBody()));
 
+			JAXBContext context = JAXBContext.newInstance(NutritionApiResponse.class);
+			Unmarshaller unmarshaller = context.createUnmarshaller();
 			nutritionApiResponse = (NutritionApiResponse)unmarshaller.unmarshal(reader);
 		} catch (JAXBException e) {
-			throw new IllegalArgumentException(e);
+			return null;
 		}
 
 		return CompletableFuture.completedFuture(nutritionApiResponse);
