@@ -57,11 +57,10 @@ public class DietController {
 	@GetMapping("/getDiets")
 	public ResponseEntity<List<DietResponse>> getDiets(
 		@RequestHeader("user-id") long userId,
-		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
-		@RequestParam(name = "count", required = false, defaultValue = "4") int count
+		@RequestParam(name = "date") LocalDate date
 	) {
 		return ResponseEntity.ok(
-			dietService.getDiets(userId, cursor, count));
+			dietService.getDiets(userId, date));
 	}
 
 	@GetMapping("/getFoods")

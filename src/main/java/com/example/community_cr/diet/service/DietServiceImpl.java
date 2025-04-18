@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
@@ -73,6 +71,7 @@ public class DietServiceImpl implements DietService {
 				FoodRequest foodRequest = foodRequestMap.get(food.getFoodCode());
 				if (foodRequest != null) {
 					dietFood = DietFood.from(
+						foodRequest.getIntakeWeight(),
 						foodRequest.getIntakeKcal(),
 						diet, food);
 				}
@@ -98,17 +97,11 @@ public class DietServiceImpl implements DietService {
 	}
 
 	@Override
-	public List<DietResponse> getDiets(long userId, long cursor, int count) {
+	public List<DietResponse> getDiets(long userId, LocalDate date) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자를 찾을 수 없습니다."));
 
-		PageRequest pageRequest = PageRequest.of(0, count);
-		Slice<Diet> dietList;
-		if (cursor == 0) {
-			dietList = dietRepository.findTopByUserIdOrderByDateDesc(userId, pageRequest);
-		} else {
-			dietList = dietRepository.findNextPagePosts(userId, cursor, pageRequest);
-		}
+		List<Diet> dietList = dietRepository.findAllByDateAndUserId(date, userId);
 
 		double recommendKcal = user.getRecommendKcal();
 		return dietList.stream()

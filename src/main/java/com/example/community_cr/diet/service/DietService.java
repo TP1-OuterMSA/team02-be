@@ -13,7 +13,7 @@ public interface DietService {
 
 	Optional<DietResponse> getDiet(long userId, long dietId);
 
-	List<DietResponse> getDiets(long userId, long cursor, int count);
+	List<DietResponse> getDiets(long userId, LocalDate date);
 
 	List<LocalDate> getDietDates(long userId, YearMonth month);
 }

@@ -15,6 +15,9 @@ public class FoodRequest {
 	@NotBlank(message = "음식 코드를 입력해주세요.")
 	private String foodCode;
 
+	@Min(value = 0, message = "최소 0 이상의 양을 섭취하셔야됩니다.")
+	private double intakeWeight;
+
 	@Min(value = 0, message = "최소 0 이상의 칼로리를 섭취하셔야됩니다.")
 	private double intakeKcal;
 }
