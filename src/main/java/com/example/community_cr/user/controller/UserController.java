@@ -1,6 +1,7 @@
 package com.example.community_cr.user.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +18,20 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	private final UserService userService;
 
+	@GetMapping("/getRecommendKcal")
+	public ResponseEntity<Double> getRecommendKcal(
+		@RequestHeader("user-id") long userId
+	) {
+		double recommendKcal = userService.getRecommendKcal(userId)
+			.orElseThrow(IllegalArgumentException::new);
+		return ResponseEntity.ok(recommendKcal);
+	}
+
 	@PatchMapping("/updateKcal")
 	public ResponseEntity<Void> updateKcal(
 		@RequestHeader("user-id") long userId,
-		@RequestParam("kcal") double kcal) {
+		@RequestParam("kcal") double kcal
+	) {
 		userService.updateKcal(userId, kcal);
 		return ResponseEntity.ok().build();
 	}

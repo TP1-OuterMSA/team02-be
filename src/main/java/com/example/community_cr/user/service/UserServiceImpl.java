@@ -1,5 +1,7 @@
 package com.example.community_cr.user.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,5 +22,13 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자가 존재하지 않습니다."));
 
 		user.updateRecommendKcal(kcal);
+	}
+
+	@Override
+	public Optional<Double> getRecommendKcal(long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자가 존재하지 않습니다."));
+
+		return Optional.of(user.getRecommendKcal());
 	}
 }
