@@ -1,5 +1,6 @@
-package com.example.community_cr.user.entity;
+package com.example.community_cr.diet.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,14 +16,22 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class Food {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 
-	private Double recommendKcal;
+	@Column(unique = true, nullable = false)
+	private String foodCode;
 
-	public void updateRecommendKcal(double recommendKcal) {
-		this.recommendKcal = recommendKcal;
-	}
+	@Column(nullable = false)
+	private String foodName;
+
+	//칼로리,탄단지 이외 추가 요소 필요
+	private double foodWeight;
+	private double kcal;
+	private double protein;
+	private double fat;
+	private double carb;
 }

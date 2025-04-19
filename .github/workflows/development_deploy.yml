@@ -1,7 +1,7 @@
 name: Development Deploy
 on:
   pull_request:
-    types: [closed]
+    types: [ closed ]
     branches:
       - 'develop'
 env:
