@@ -34,7 +34,7 @@ public class DietController {
 	private final FoodService foodService;
 
 	@PostMapping("/saveDiet")
-	public ResponseEntity<DietResponse> createDiet(
+	public ResponseEntity<DietResponse> saveDiet(
 		@RequestHeader("user-id") long userId,
 		@RequestBody @Valid DietRequest dto
 	) {
