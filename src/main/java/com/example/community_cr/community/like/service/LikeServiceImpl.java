@@ -4,11 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.community_cr.community.like.entity.Heart;
-import com.example.community_cr.community.post.Repository.CommunityRepository;
-import com.example.community_cr.community.post.entity.Post;
 import com.example.community_cr.community.like.entity.HeartId;
 import com.example.community_cr.community.like.repository.LikeRepository;
-import com.example.community_cr.community.like.repository.LikeService;
+import com.example.community_cr.community.post.Repository.CommunityRepository;
+import com.example.community_cr.community.post.entity.Post;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 

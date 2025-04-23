@@ -73,10 +73,11 @@ public class CommunityController {
 
 	@GetMapping("/getPosts")
 	public ResponseEntity<List<PostResponse>> getPosts(
+		@RequestHeader("user-id") long userId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(name = "count", required = false, defaultValue = "4") int count) {
 		return ResponseEntity.ok(
-			communityService.findAllCommunityPosts(cursor, count));
+			communityService.findAllCommunityPosts(userId, cursor, count));
 	}
 
 	@GetMapping("/getPost/{postId}")
