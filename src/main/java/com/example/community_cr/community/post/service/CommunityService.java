@@ -20,7 +20,7 @@ public interface CommunityService {
 	Optional<PostDetailResponse> updateCommunityPost(long userId, long postId, UpdatePostRequest updatePostRequest,
 		MultipartFile image);
 
-	List<PostResponse> findAllCommunityPosts(long cursor, int count);
+	List<PostResponse> findAllCommunityPosts(long userId, long cursor, int count);
 
 	Optional<PostDetailResponse> findCommunityPostById(long userId, long postId);
 
