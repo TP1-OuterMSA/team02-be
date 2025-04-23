@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,15 +40,40 @@ public class DietServiceImpl implements DietService {
 	public Optional<DietResponse> saveDiet(long userId, DietRequest dto) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 데이터가 존재하지 않습니다."));
-		if (dietRepository.existsByUserIdAndDateAndType(userId, dto.getDate(), dto.getMealType())) {
-			throw new IllegalArgumentException("이미 해당 날짜의 " + dto.getMealType() + " 식단이 존재합니다.");
+		Optional<Diet> existDiet = dietRepository.findByUserIdAndDateAndType(userId, dto.getDate(), dto.getMealType());
+		if (existDiet.isPresent()) {
+			addDietFoodFromDietRequest(existDiet.get(), dto);
+			return Optional.of(DietResponse.from(existDiet.get(), user.getRecommendKcal()));
 		}
 
+		Diet diet = Diet.of(user, dto.getDate(), dto.getMealType());
+		dietRepository.save(diet);
+
+		addDietFoodFromDietRequest(diet, dto);
+
+		return Optional.of(DietResponse.from(diet, user.getRecommendKcal()));
+	}
+
+	private void addDietFoodFromDietRequest(Diet diet, DietRequest dto) {
+		// 이미 diet에 포함된 foodCode들을 추출
+		Set<String> existingDietFoodCodes = diet.getFoods().stream()
+			.map(dietFood -> dietFood.getFood().getFoodCode())
+			.collect(Collectors.toSet());
+
+		// 새롭게 추가할 foodCode만 필터링
 		List<String> foodCodes = dto.getFoods().stream()
 			.map(FoodRequest::getFoodCode)
+			.filter(foodCode -> !existingDietFoodCodes.contains(foodCode))
 			.toList();
+
+		if (foodCodes.isEmpty()) {
+			throw new IllegalArgumentException("새롭게 추가할 음식이 존재하지 않습니다.");
+		}
+
 		List<Food> foods = foodRepository.findAllByFoodCodeIn(foodCodes);
-		if (foods.size() != dto.getFoods().size()) {
+
+		// 존재하지 않는 음식 코드 검증
+		if (foods.size() != foodCodes.size()) {
 			Set<String> existingFoodCodes = foods.stream()
 				.map(Food::getFoodCode)
 				.collect(Collectors.toSet());
@@ -59,30 +85,26 @@ public class DietServiceImpl implements DietService {
 			throw new IllegalArgumentException("존재하지 않는 음식 코드 : " + String.join(", ", notFoundFoodCodes));
 		}
 
-		Diet diet = Diet.of(user, dto.getDate(), dto.getMealType());
-		dietRepository.save(diet);
-
 		Map<String, FoodRequest> foodRequestMap = dto.getFoods().stream()
 			.collect(Collectors.toMap(FoodRequest::getFoodCode, Function.identity()));
 
-		List<DietFood> dietFoods = foods.stream()
+		// DietFood 생성
+		List<DietFood> dietFoodsToAdd = foods.stream()
 			.map(food -> {
-				DietFood dietFood = null;
 				FoodRequest foodRequest = foodRequestMap.get(food.getFoodCode());
 				if (foodRequest != null) {
-					dietFood = DietFood.from(
+					return DietFood.from(
 						foodRequest.getIntakeWeight(),
 						foodRequest.getIntakeKcal(),
 						diet, food);
 				}
-				return dietFood;
+				return null;
 			})
+			.filter(Objects::nonNull)
 			.toList();
 
-		diet.addFoods(dietFoods);
-		dietFoodRepository.saveAll(dietFoods);
-
-		return Optional.of(DietResponse.from(diet, user.getRecommendKcal()));
+		diet.addFoods(dietFoodsToAdd);
+		dietFoodRepository.saveAll(dietFoodsToAdd);
 	}
 
 	@Override
