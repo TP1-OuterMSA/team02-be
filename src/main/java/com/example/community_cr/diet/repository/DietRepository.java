@@ -17,7 +17,7 @@ public interface DietRepository extends JpaRepository<Diet, Long> {
 	List<LocalDate> findDietDatesBetween(LocalDate startDate, LocalDate endDate);
 
 	List<Diet> findAllByDateAndUserId(LocalDate date, long userId);
-
+  
 	Optional<Diet> findByUserIdAndDateAndType(long userId, LocalDate date, MealType mealType);
 }
 
