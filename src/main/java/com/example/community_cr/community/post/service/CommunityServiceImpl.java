@@ -18,6 +18,7 @@ import com.example.community_cr.community.post.controller.dto.request.UpdatePost
 import com.example.community_cr.community.post.controller.dto.response.PostDetailResponse;
 import com.example.community_cr.community.post.controller.dto.response.PostResponse;
 import com.example.community_cr.community.post.entity.Post;
+import com.example.community_cr.community.post.entity.PostFilterType;
 import com.example.community_cr.image.service.ImageService;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
@@ -89,27 +90,60 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<PostResponse> findAllCommunityPosts(long userId, long cursor, int count) {
-		// PageRequest pageRequest = PageRequest.of(0, count);
-		// Slice<Post> postList;
-		// if (cursor == 0) {
-		// 	postList = communityRepository.findTopByOrderByCreatedAtDesc(pageRequest);
-		// } else {
-		// 	postList = communityRepository.findNextPagePosts(cursor, pageRequest);
-		// }
-		// return postList.stream()
-		// 	.map(PostResponse::from)
-		// 	.peek(postResponse -> postResponse.setImageLink(
-		// 		imageService.generatePresignedUrl(postResponse.getImageLink())))
-		// 	.toList();
-		PageRequest pageRequest = PageRequest.of(0, count);
-		Slice<Post> postList = communityRepository.findCommunityPostsExcludeBlocked(userId, cursor, pageRequest);
+	public List<PostResponse> findAllCommunityPosts(long userId, long cursor, int count,
+		PostFilterType postFilterType) {
 
+		PageRequest pageRequest = PageRequest.of(0, count);
+		Slice<Post> postList;
+		postList = switch (postFilterType) {
+			case ALL -> getCommunityPosts(cursor, pageRequest);
+			case LIKE -> getCommunityPostsByLikeCount(cursor, pageRequest);
+			case COMMENT -> getCommunityPostsByCommentCount(cursor, pageRequest);
+			case MY -> getCommunityPostsByUserId(userId, cursor, pageRequest);
+		};
+
+		assert postList != null;
 		return postList.stream()
 			.map(PostResponse::from)
 			.peek(postResponse -> postResponse.setImageLink(
 				imageService.generatePresignedUrl(postResponse.getImageLink())))
 			.toList();
+	}
+
+	private Slice<Post> getCommunityPostsByUserId(long userId, long cursor, PageRequest pageRequest) {
+		if (cursor == 0) {
+			return communityRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageRequest);
+		} else {
+			return communityRepository.findNextPagePostsByUserId(userId, cursor, pageRequest);
+		}
+	}
+
+	private Slice<Post> getCommunityPostsByCommentCount(long cursor, PageRequest pageRequest) {
+		if (cursor == 0) {
+			return communityRepository.findAllOrderByCommentCountDesc(pageRequest);
+		} else {
+			long commentCount = communityRepository.getCommentCountById(cursor)
+				.orElseThrow(() -> new IllegalArgumentException("해당하는 게시글이 존재하지 않습니다. 잘못된 커서가 전달되었습니다."));
+			return communityRepository.findNextPageOrderByCommentCountDesc(commentCount, cursor, pageRequest);
+		}
+	}
+
+	private Slice<Post> getCommunityPostsByLikeCount(long cursor, PageRequest pageRequest) {
+		if (cursor == 0) {
+			return communityRepository.findAllOrderByHeartCountDesc(pageRequest);
+		} else {
+			long heartCount = communityRepository.getLikeCountById(cursor)
+				.orElseThrow(() -> new IllegalArgumentException("해당하는 게시글이 존재하지 않습니다. 잘못된 커서가 전달되었습니다."));
+			return communityRepository.findNextPageOrderByHeartCountDesc(heartCount, cursor, pageRequest);
+		}
+	}
+
+	private Slice<Post> getCommunityPosts(long cursor, PageRequest pageRequest) {
+		if (cursor == 0) {
+			return communityRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+		} else {
+			return communityRepository.findNextPagePosts(cursor, pageRequest);
+		}
 	}
 
 	@Override
