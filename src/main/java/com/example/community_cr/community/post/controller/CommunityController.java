@@ -21,6 +21,7 @@ import com.example.community_cr.community.post.controller.dto.request.PostReques
 import com.example.community_cr.community.post.controller.dto.request.UpdatePostRequest;
 import com.example.community_cr.community.post.controller.dto.response.PostDetailResponse;
 import com.example.community_cr.community.post.controller.dto.response.PostResponse;
+import com.example.community_cr.community.post.entity.PostFilterType;
 import com.example.community_cr.community.post.service.CommunityService;
 
 import jakarta.validation.Valid;
@@ -75,9 +76,10 @@ public class CommunityController {
 	public ResponseEntity<List<PostResponse>> getPosts(
 		@RequestHeader("user-id") long userId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
-		@RequestParam(name = "count", required = false, defaultValue = "4") int count) {
+		@RequestParam(name = "count", required = false, defaultValue = "4") int count,
+		@RequestParam(name = "filter", required = false, defaultValue = "ALL") PostFilterType postFilterType) {
 		return ResponseEntity.ok(
-			communityService.findAllCommunityPosts(userId, cursor, count));
+			communityService.findAllCommunityPosts(userId, cursor, count, postFilterType));
 	}
 
 	@GetMapping("/getPost/{postId}")
