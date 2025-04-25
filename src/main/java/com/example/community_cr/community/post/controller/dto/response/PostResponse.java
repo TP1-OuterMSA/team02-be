@@ -24,9 +24,9 @@ public class PostResponse {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	public LocalDateTime createdAt;
 
-	public int likeCount;
+	public long likeCount;
 
-	public int commentCount;
+	public long commentCount;
 
 	public static PostResponse from(Post post) {
 		return PostResponse.builder()
@@ -35,8 +35,8 @@ public class PostResponse {
 			.content(post.getContent())
 			.createdAt(post.getCreatedAt())
 			.imageLink(post.getImageFileName())
-			.likeCount(post.getHeartList().size())
-			.commentCount(post.getCommentList().size())
+			.likeCount(post.getHeartCount())
+			.commentCount(post.getCommentCount())
 			.build();
 	}
 }

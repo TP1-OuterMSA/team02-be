@@ -49,10 +49,32 @@ public class Post {
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Builder.Default
 	private List<Heart> heartList = new ArrayList<>();
+	private long heartCount;
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Builder.Default
 	private List<Comment> commentList = new ArrayList<>();
+	private long commentCount;
+
+	public void addHeart(Heart heart) {
+		heartList.add(heart);
+		heartCount = heartList.size();
+	}
+
+	public void removeHeart(Heart heart) {
+		heartList.remove(heart);
+		heartCount = heartList.size();
+	}
+
+	public void addComment(Comment comment) {
+		commentList.add(comment);
+		commentCount = commentList.size();
+	}
+
+	public void removeComment(Comment comment) {
+		commentList.remove(comment);
+		commentCount = commentList.size();
+	}
 
 	public void updateImageFileName(String imageFileName) {
 		this.imageFileName = imageFileName;
