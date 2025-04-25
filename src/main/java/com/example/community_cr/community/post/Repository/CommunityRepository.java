@@ -24,10 +24,10 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 
 	@Query("""
 			SELECT p FROM Post p
-			WHERE p.id < :cursor
-			AND NOT EXISTS (
+			WHERE NOT EXISTS (
 				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
 			)
+			AND p.id < :cursor
 			ORDER BY p.createdAt DESC
 		""")
 	Slice<Post> findNextPagePosts(@Param("userId") long userId, @Param("cursor") long cursor, PageRequest pageRequest);
@@ -49,37 +49,29 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 		Pageable pageable);
 
 	// 좋아요 갯수 순으로 가져오기
-
 	@Query("""
-			SELECT COUNT(h) FROM Post p
-			LEFT JOIN p.heartList h
+			SELECT p.heartCount FROM Post p
 			WHERE p.id = :postId
-			GROUP BY p
-			ORDER BY COUNT(h) DESC, p.id DESC
 		""")
 	Optional<Long> getLikeCountById(@Param("postId") long postId);
 
 	@Query("""
 			SELECT p FROM Post p
-			LEFT JOIN p.heartList h
 			WHERE NOT EXISTS (
 				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
 			)
-			GROUP BY p
-			ORDER BY COUNT(h) DESC, p.id DESC
+			ORDER BY p.heartCount DESC, p.id DESC
 		""")
 	Slice<Post> findAllOrderByHeartCountDesc(@Param("userId") long userId, Pageable pageable);
 
 	@Query("""
 		    SELECT p FROM Post p
-		    LEFT JOIN p.heartList h
-			WHERE NOT EXISTS (
-				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
-			)
-		    GROUP BY p.id
-		    HAVING (COUNT(h) < :heartCount
-		        OR (COUNT(h) = :heartCount AND p.id < :cursor))
-		    ORDER BY COUNT(h) DESC, p.id DESC
+		    WHERE NOT EXISTS (
+				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id)
+			AND (
+				p.heartCount < :heartCount
+				OR (p.heartCount = :heartCount AND p.id < :cursor))
+		    ORDER BY p.heartCount DESC, p.id DESC
 		""")
 	Slice<Post> findNextPageOrderByHeartCountDesc(@Param("userId") long userId,
 		@Param("heartCount") long heartCount, @Param("cursor") long cursor, Pageable pageable);
@@ -87,35 +79,28 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 	// 댓글 갯수 순으로 가져오기
 
 	@Query("""
-			SELECT COUNT(c) FROM Post p
-			LEFT JOIN p.commentList c
+			SELECT p.commentCount FROM Post p
 			WHERE p.id = :postId
-			GROUP BY p
-			ORDER BY COUNT(c) DESC, p.id DESC
 		""")
 	Optional<Long> getCommentCountById(@Param("postId") long postId);
 
 	@Query("""
 			SELECT p FROM Post p
-			LEFT JOIN p.commentList c
 			WHERE NOT EXISTS (
-					SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
-				)
-			GROUP BY p
-			ORDER BY COUNT(c) DESC, p.id DESC
+				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
+			)
+			ORDER BY p.commentCount DESC, p.id DESC
 		""")
 	Slice<Post> findAllOrderByCommentCountDesc(@Param("userId") long userId, Pageable pageable);
 
 	@Query("""
 		    SELECT p FROM Post p
-		    LEFT JOIN p.commentList c
-			WHERE NOT EXISTS (
-				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
-			)
-		    GROUP BY p.id
-		    HAVING (COUNT(c) < :commentCount
-		        OR (COUNT(c) = :commentCount AND p.id < :cursor))
-		    ORDER BY COUNT(c) DESC, p.id DESC
+		    WHERE NOT EXISTS (
+				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id)
+			AND (
+				p.commentCount < :commentCount
+		        OR (p.commentCount = :commentCount AND p.id < :cursor))
+		    ORDER BY p.commentCount DESC, p.id DESC
 		""")
 	Slice<Post> findNextPageOrderByCommentCountDesc(@Param("userId") long userId,
 		@Param("commentCount") long commentCount, @Param("cursor") long cursor, Pageable pageable);

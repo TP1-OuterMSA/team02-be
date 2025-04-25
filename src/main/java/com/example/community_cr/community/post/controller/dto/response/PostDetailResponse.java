@@ -22,8 +22,8 @@ public class PostDetailResponse {
 	private String content;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
-	private int likeCount;
-	private int commentCount;
+	private long likeCount;
+	private long commentCount;
 	private List<CommentResponse> commentResponseList;
 	private boolean likeStatus;
 
@@ -35,8 +35,8 @@ public class PostDetailResponse {
 			.title(post.getTitle())
 			.content(post.getContent())
 			.createdAt(post.getCreatedAt())
-			.likeCount(post.getHeartList().size())
-			.commentCount(post.getCommentList().size())
+			.likeCount(post.getHeartCount())
+			.commentCount(post.getCommentCount())
 			.commentResponseList(
 				post.getCommentList().stream()
 					.map(CommentResponse::from)

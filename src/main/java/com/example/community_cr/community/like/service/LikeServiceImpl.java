@@ -30,15 +30,28 @@ public class LikeServiceImpl implements LikeService {
 			.orElseThrow(IllegalArgumentException::new);
 		Post post = communityRepository.findById(postId)
 			.orElseThrow(IllegalArgumentException::new);
-		likeRepository.save(Heart.of(user, post));
+
+		Heart heart = likeRepository.save(Heart.of(user, post));
+
+		post.addHeart(heart);
+		communityRepository.save(post);
 	}
 
 	@Override
 	public void unlikePost(long senderId, long postId) {
-		HeartId heartId = HeartId.of(postId, senderId);
-		if (!likeRepository.existsById(heartId)) {
-			throw new IllegalArgumentException();
+		if (!userRepository.existsById(senderId)) {
+			throw new IllegalArgumentException("해당하는 사용자가 존재하지 않습니다.");
 		}
+		Post post = communityRepository.findById(postId)
+			.orElseThrow(() -> new IllegalArgumentException("해당하는 게시글이 존재하지 않습니다."));
+
+		HeartId heartId = HeartId.of(postId, senderId);
+		Heart heart = likeRepository.findById(heartId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 게시글은 좋아요 누른 상태가 아닙니다."));
+
 		likeRepository.deleteById(heartId);
+
+		post.removeHeart(heart);
+		communityRepository.save(post);
 	}
 }
