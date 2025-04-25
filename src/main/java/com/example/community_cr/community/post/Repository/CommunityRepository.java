@@ -20,7 +20,7 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			)
 			ORDER BY p.createdAt DESC
 		""")
-	Slice<Post> findAllByOrderByCreatedAtDesc(PageRequest pageRequest);
+	Slice<Post> findAllByOrderByCreatedAtDesc(@Param("userId") long userId, PageRequest pageRequest);
 
 	@Query("""
 			SELECT p FROM Post p
@@ -30,7 +30,7 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			)
 			ORDER BY p.createdAt DESC
 		""")
-	Slice<Post> findNextPagePosts(@Param("cursor") long cursor, PageRequest pageRequest);
+	Slice<Post> findNextPagePosts(@Param("userId") long userId, @Param("cursor") long cursor, PageRequest pageRequest);
 
 	// User Id로 가져오기 (나의 게시글 가져오기에 사용 -> Block 필터링이 없음)
 	@Query("""
@@ -54,9 +54,6 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			SELECT COUNT(h) FROM Post p
 			LEFT JOIN p.heartList h
 			WHERE p.id = :postId
-				AND NOT EXISTS (
-					SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
-				)
 			GROUP BY p
 			ORDER BY COUNT(h) DESC, p.id DESC
 		""")
@@ -71,7 +68,7 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			GROUP BY p
 			ORDER BY COUNT(h) DESC, p.id DESC
 		""")
-	Slice<Post> findAllOrderByHeartCountDesc(Pageable pageable);
+	Slice<Post> findAllOrderByHeartCountDesc(@Param("userId") long userId, Pageable pageable);
 
 	@Query("""
 		    SELECT p FROM Post p
@@ -84,8 +81,8 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 		        OR (COUNT(h) = :heartCount AND p.id < :cursor))
 		    ORDER BY COUNT(h) DESC, p.id DESC
 		""")
-	Slice<Post> findNextPageOrderByHeartCountDesc(@Param("heartCount") long heartCount,
-		@Param("cursor") long cursor, Pageable pageable);
+	Slice<Post> findNextPageOrderByHeartCountDesc(@Param("userId") long userId,
+		@Param("heartCount") long heartCount, @Param("cursor") long cursor, Pageable pageable);
 
 	// 댓글 갯수 순으로 가져오기
 
@@ -93,9 +90,6 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			SELECT COUNT(c) FROM Post p
 			LEFT JOIN p.commentList c
 			WHERE p.id = :postId
-			AND NOT EXISTS (
-				SELECT 1 FROM Block b WHERE b.user.id = :userId AND b.post.id = p.id
-			)
 			GROUP BY p
 			ORDER BY COUNT(c) DESC, p.id DESC
 		""")
@@ -110,7 +104,7 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 			GROUP BY p
 			ORDER BY COUNT(c) DESC, p.id DESC
 		""")
-	Slice<Post> findAllOrderByCommentCountDesc(Pageable pageable);
+	Slice<Post> findAllOrderByCommentCountDesc(@Param("userId") long userId, Pageable pageable);
 
 	@Query("""
 		    SELECT p FROM Post p
@@ -123,6 +117,6 @@ public interface CommunityRepository extends JpaRepository<Post, Long> {
 		        OR (COUNT(c) = :commentCount AND p.id < :cursor))
 		    ORDER BY COUNT(c) DESC, p.id DESC
 		""")
-	Slice<Post> findNextPageOrderByCommentCountDesc(@Param("commentCount") long commentCount,
-		@Param("cursor") long cursor, Pageable pageable);
+	Slice<Post> findNextPageOrderByCommentCountDesc(@Param("userId") long userId,
+		@Param("commentCount") long commentCount, @Param("cursor") long cursor, Pageable pageable);
 }

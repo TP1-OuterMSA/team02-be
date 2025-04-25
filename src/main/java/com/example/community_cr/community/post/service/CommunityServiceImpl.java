@@ -96,9 +96,9 @@ public class CommunityServiceImpl implements CommunityService {
 		PageRequest pageRequest = PageRequest.of(0, count);
 		Slice<Post> postList;
 		postList = switch (postFilterType) {
-			case ALL -> getCommunityPosts(cursor, pageRequest);
-			case LIKE -> getCommunityPostsByLikeCount(cursor, pageRequest);
-			case COMMENT -> getCommunityPostsByCommentCount(cursor, pageRequest);
+			case ALL -> getCommunityPosts(userId, cursor, pageRequest);
+			case LIKE -> getCommunityPostsByLikeCount(userId, cursor, pageRequest);
+			case COMMENT -> getCommunityPostsByCommentCount(userId, cursor, pageRequest);
 			case MY -> getCommunityPostsByUserId(userId, cursor, pageRequest);
 		};
 
@@ -118,31 +118,31 @@ public class CommunityServiceImpl implements CommunityService {
 		}
 	}
 
-	private Slice<Post> getCommunityPostsByCommentCount(long cursor, PageRequest pageRequest) {
+	private Slice<Post> getCommunityPostsByCommentCount(long userId, long cursor, PageRequest pageRequest) {
 		if (cursor == 0) {
-			return communityRepository.findAllOrderByCommentCountDesc(pageRequest);
+			return communityRepository.findAllOrderByCommentCountDesc(userId, pageRequest);
 		} else {
 			long commentCount = communityRepository.getCommentCountById(cursor)
 				.orElseThrow(() -> new IllegalArgumentException("해당하는 게시글이 존재하지 않습니다. 잘못된 커서가 전달되었습니다."));
-			return communityRepository.findNextPageOrderByCommentCountDesc(commentCount, cursor, pageRequest);
+			return communityRepository.findNextPageOrderByCommentCountDesc(userId, commentCount, cursor, pageRequest);
 		}
 	}
 
-	private Slice<Post> getCommunityPostsByLikeCount(long cursor, PageRequest pageRequest) {
+	private Slice<Post> getCommunityPostsByLikeCount(long userId, long cursor, PageRequest pageRequest) {
 		if (cursor == 0) {
-			return communityRepository.findAllOrderByHeartCountDesc(pageRequest);
+			return communityRepository.findAllOrderByHeartCountDesc(userId, pageRequest);
 		} else {
 			long heartCount = communityRepository.getLikeCountById(cursor)
 				.orElseThrow(() -> new IllegalArgumentException("해당하는 게시글이 존재하지 않습니다. 잘못된 커서가 전달되었습니다."));
-			return communityRepository.findNextPageOrderByHeartCountDesc(heartCount, cursor, pageRequest);
+			return communityRepository.findNextPageOrderByHeartCountDesc(userId, heartCount, cursor, pageRequest);
 		}
 	}
 
-	private Slice<Post> getCommunityPosts(long cursor, PageRequest pageRequest) {
+	private Slice<Post> getCommunityPosts(long userId, long cursor, PageRequest pageRequest) {
 		if (cursor == 0) {
-			return communityRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+			return communityRepository.findAllByOrderByCreatedAtDesc(userId, pageRequest);
 		} else {
-			return communityRepository.findNextPagePosts(cursor, pageRequest);
+			return communityRepository.findNextPagePosts(userId, cursor, pageRequest);
 		}
 	}
 
