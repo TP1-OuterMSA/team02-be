@@ -169,14 +169,26 @@ public class FoodServiceImpl implements FoodService {
 			}
 
 			assert response.getBody() != null;
-			Pattern pattern = Pattern.compile("<returnReasonCode>(\\d+)</returnReasonCode>");
-			Matcher matcher = pattern.matcher(response.getBody());
+			Pattern errorPattern = Pattern.compile("<returnReasonCode>(\\d+)</returnReasonCode>");
+			Matcher errorMatcher = errorPattern.matcher(response.getBody());
+			Pattern resultPattern = Pattern.compile("\"resultCode\":\"(\\d+)\"");
+			Matcher resultMatcher = resultPattern.matcher(response.getBody());
 
-			if (matcher.find()) {
-				String code = matcher.group(1);
-				throw new IllegalArgumentException("에러 코드 : " + code);
+			String code;
+			if (errorMatcher.find()) {
+				code = errorMatcher.group(1);
+				throw new IllegalArgumentException(
+					"음식조회 API 에러 발생\n에러 코드: : " + code
+						+ "\n(4: HTTP 에러\n22: API 제한 횟수 초과\n23: 동시 요청 제한 횟수 초과\n30: 잘못된 서비스)");
+			} else if (resultMatcher.find()) {
+				code = resultMatcher.group(1);
+				if (Integer.parseInt(code) == 301) {
+					return List.of();
+				} else {
+					throw new IllegalArgumentException("결과 코드 : " + code);
+				}
 			} else {
-				return List.of();
+				throw new IllegalStateException("공공데이터 api 응답을 처리하던 중 문제가 발생했습니다.\n" + response.getBody());
 			}
 		}
 
@@ -240,7 +252,21 @@ public class FoodServiceImpl implements FoodService {
 			Unmarshaller unmarshaller = context.createUnmarshaller();
 			nutritionApiResponse = (NutritionApiResponse)unmarshaller.unmarshal(reader);
 		} catch (JAXBException e) {
-			return null;
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				throw new IllegalStateException("외부 API 요청 중 문제가 생겼습니다.");
+			}
+
+			Pattern pattern = Pattern.compile("<returnReasonCode>(\\d+)</returnReasonCode>");
+			Matcher matcher = pattern.matcher(response.getBody());
+
+			if (matcher.find()) {
+				String code = matcher.group(1);
+				throw new IllegalArgumentException(
+					"영양분석 API 에러 발생\n에러 코드: : " + code
+						+ "\n(4: HTTP 에러\n22: API 제한 횟수 초과\n23: 동시 요청 제한 횟수 초과\n30: 잘못된 서비스)");
+			} else {
+				return null;
+			}
 		}
 
 		return CompletableFuture.completedFuture(nutritionApiResponse);
