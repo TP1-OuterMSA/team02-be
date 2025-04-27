@@ -42,6 +42,9 @@ public class Post {
 	@Builder.Default
 	private LocalDateTime createdAt = LocalDateTime.now();
 
+	@Builder.Default
+	private LocalDateTime updatedAt = LocalDateTime.now(); // ★ 추가
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
@@ -79,4 +82,9 @@ public class Post {
 	public void updateImageFileName(String imageFileName) {
 		this.imageFileName = imageFileName;
 	}
+
+	public void updateUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
 }

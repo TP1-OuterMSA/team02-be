@@ -22,6 +22,8 @@ public class PostDetailResponse {
 	private String content;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime updatedAt;
 	private long likeCount;
 	private long commentCount;
 	private List<CommentResponse> commentResponseList;
@@ -42,6 +44,22 @@ public class PostDetailResponse {
 					.map(CommentResponse::from)
 					.toList()
 			)
+			.likeStatus(likeStatus)
+			.build();
+	}
+
+	public static PostDetailResponse from(Post post, boolean likeStatus, List<CommentResponse> commentResponses) {
+		return PostDetailResponse.builder()
+			.id(post.getId())
+			.userId(post.getUser().getId())
+			.image(post.getImageFileName())
+			.title(post.getTitle())
+			.content(post.getContent())
+			.createdAt(post.getCreatedAt())
+			.updatedAt(post.getUpdatedAt())
+			.likeCount(post.getHeartCount())
+			.commentCount(post.getCommentCount())
+			.commentResponseList(commentResponses)
 			.likeStatus(likeStatus)
 			.build();
 	}
