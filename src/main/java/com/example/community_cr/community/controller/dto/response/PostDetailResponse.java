@@ -20,7 +20,9 @@ public class PostDetailResponse {
 	private String image;
 	private String title;
 	private String content;
+
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime updatedAt;
 	private LocalDateTime createdAt;
 	private int likeCount;
 	private int commentCount;
@@ -29,20 +31,37 @@ public class PostDetailResponse {
 
 	public static PostDetailResponse from(Post post, boolean likeStatus) {
 		return PostDetailResponse.builder()
-			.id(post.getId())
-			.userId(post.getUser().getId())
-			.image(post.getImageFileName())
-			.title(post.getTitle())
-			.content(post.getContent())
-			.createdAt(post.getCreatedAt())
-			.likeCount(post.getHeartList().size())
-			.commentCount(post.getCommentList().size())
-			.commentResponseList(
-				post.getCommentList().stream()
-					.map(CommentResponse::from)
-					.toList()
-			)
-			.likeStatus(likeStatus)
-			.build();
+				.id(post.getId())
+				.userId(post.getUser().getId())
+				.image(post.getImageFileName())
+				.title(post.getTitle())
+				.content(post.getContent())
+				.createdAt(post.getCreatedAt())
+				.updatedAt(post.getUpdatedAt())
+				.likeCount(post.getHeartList().size())
+				.commentCount(post.getCommentList().size())
+				.commentResponseList(
+						post.getCommentList().stream()
+								.map(CommentResponse::from)
+								.toList()
+				)
+				.likeStatus(likeStatus)
+				.build();
+	}
+
+	public static PostDetailResponse from(Post post, boolean likeStatus, List<CommentResponse> commentResponses) {
+		return PostDetailResponse.builder()
+				.id(post.getId())
+				.userId(post.getUser().getId())
+				.image(post.getImageFileName())
+				.title(post.getTitle())
+				.content(post.getContent())
+				.createdAt(post.getCreatedAt())
+				.updatedAt(post.getUpdatedAt())
+				.likeCount(post.getHeartList().size())
+				.commentCount(post.getCommentList().size())
+				.commentResponseList(commentResponses)
+				.likeStatus(likeStatus)
+				.build();
 	}
 }

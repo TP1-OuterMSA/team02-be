@@ -23,6 +23,7 @@ public class PostResponse {
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	public LocalDateTime createdAt;
+	public LocalDateTime updatedAt;
 
 	public int likeCount;
 
@@ -34,6 +35,7 @@ public class PostResponse {
 			.title(post.getTitle())
 			.content(post.getContent())
 			.createdAt(post.getCreatedAt())
+			.updatedAt(post.getUpdatedAt())
 			.imageLink(post.getImageFileName())
 			.likeCount(post.getHeartList().size())
 			.commentCount(post.getCommentList().size())

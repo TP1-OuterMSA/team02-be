@@ -3,7 +3,10 @@ package com.example.community_cr.community.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.example.community_cr.comment.controller.dto.response.CommentResponse;
+import com.example.community_cr.comment_like.repository.CommentLikeRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class CommunityServiceImpl implements CommunityService {
 	private final CommunityRepository communityRepository;
 	private final UserRepository userRepository;
 	private final LikeRepository likeRepository;
+	private final CommentLikeRepository commentLikeRepository;
 
 	@Override
 	public Optional<PostDetailResponse> createCommunityPost(long userId, PostRequest postRequest, MultipartFile image) {
@@ -81,6 +85,8 @@ public class CommunityServiceImpl implements CommunityService {
 		imageService.delete(post.getImageFileName());
 
 		Post updatedPost = updatePostRequest.toEntity(LocalDateTime.now(), post, imageFileName);
+		updatedPost.updateUpdatedAt(LocalDateTime.now());
+
 		communityRepository.save(updatedPost);
 
 		return toOptionalDetailResponse(updatedPost,
@@ -108,10 +114,23 @@ public class CommunityServiceImpl implements CommunityService {
 	@Transactional(readOnly = true)
 	public Optional<PostDetailResponse> findCommunityPostById(long userId, long postId) {
 		Post post = communityRepository.findById(postId)
-			.orElseThrow(IllegalArgumentException::new);
-		boolean likeStatus = likeRepository.existsById(HeartId.of(postId, userId));
-		return toOptionalDetailResponse(post, likeStatus);
+				.orElseThrow(IllegalArgumentException::new);
+
+		boolean postLikeStatus = likeRepository.existsById(HeartId.of(postId, userId));
+
+		List<CommentResponse> commentResponses = post.getCommentList().stream()
+				.map(comment -> {
+					boolean liked = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
+					return CommentResponse.from(comment, liked);
+				})
+				.toList();
+
+		PostDetailResponse response = PostDetailResponse.from(post, postLikeStatus, commentResponses);
+		response.setImage(imageService.generatePresignedUrl(response.getImage()));
+
+		return Optional.of(response);
 	}
+
 
 	@Override
 	public void deletePost(long userId, long postId) {
@@ -137,4 +156,7 @@ public class CommunityServiceImpl implements CommunityService {
 			imageService.generatePresignedUrl(response.getImage()));
 		return Optional.of(response);
 	}
+
+
+
 }

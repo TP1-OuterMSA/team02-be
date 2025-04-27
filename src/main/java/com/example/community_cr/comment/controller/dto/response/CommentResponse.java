@@ -15,6 +15,7 @@ public class CommentResponse {
 	public final long userId;
 	public final long postId;
 	public final String content;
+	private boolean liked;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	public final LocalDateTime createdAt;
@@ -25,7 +26,19 @@ public class CommentResponse {
 			.content(comment.getContent())
 			.userId(comment.getUser().getId())
 			.postId(comment.getPost().getId())
+			.liked(false)
 			.createdAt(comment.getCreatedAt())
 			.build();
+	}
+
+	public static CommentResponse from(Comment comment, boolean liked) {
+		return CommentResponse.builder()
+				.commentId(comment.getId())
+				.userId(comment.getUser().getId())
+				.postId(comment.getPost().getId())
+				.content(comment.getContent())
+				.liked(liked)
+				.createdAt(comment.getCreatedAt())
+				.build();
 	}
 }
