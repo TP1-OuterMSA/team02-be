@@ -10,10 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.community_cr.comment_like.repository.CommentLikeRepository;
 import com.example.community_cr.community.comment.controller.dto.response.CommentResponse;
-import com.example.community_cr.community.like.entity.HeartId;
-import com.example.community_cr.community.like.repository.LikeRepository;
+import com.example.community_cr.community.comment_like.repository.CommentLikeRepository;
 import com.example.community_cr.community.post.Repository.CommunityRepository;
 import com.example.community_cr.community.post.controller.dto.request.PostRequest;
 import com.example.community_cr.community.post.controller.dto.request.UpdatePostRequest;
@@ -21,6 +19,8 @@ import com.example.community_cr.community.post.controller.dto.response.PostDetai
 import com.example.community_cr.community.post.controller.dto.response.PostResponse;
 import com.example.community_cr.community.post.entity.Post;
 import com.example.community_cr.community.post.entity.PostFilterType;
+import com.example.community_cr.community.post_like.entity.HeartId;
+import com.example.community_cr.community.post_like.repository.LikeRepository;
 import com.example.community_cr.image.service.ImageService;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;

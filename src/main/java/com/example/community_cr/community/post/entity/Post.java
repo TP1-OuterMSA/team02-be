@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.community_cr.community.comment.entity.Comment;
-import com.example.community_cr.community.like.entity.Heart;
+import com.example.community_cr.community.post_like.entity.Heart;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.CascadeType;
