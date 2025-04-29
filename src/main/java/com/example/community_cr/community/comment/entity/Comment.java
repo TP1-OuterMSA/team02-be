@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.example.community_cr.community.post.entity.Post;
 import com.example.community_cr.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +32,7 @@ public class Comment {
 	private String content;
 
 	@Builder.Default
+	@Column(updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@ManyToOne(fetch = FetchType.LAZY)
