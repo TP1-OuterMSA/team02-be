@@ -69,7 +69,7 @@ public class CommunityServiceImpl implements CommunityService {
 		String imageFileName = imageService.upload(image);
 		imageService.delete(post.getImageFileName());
 
-		post.updateImageFileName(imageFileName);
+		post.updateImageFileName(imageFileName, LocalDateTime.now());
 		communityRepository.save(post);
 
 		return toOptionalDetailResponse(post,
@@ -85,7 +85,6 @@ public class CommunityServiceImpl implements CommunityService {
 		imageService.delete(post.getImageFileName());
 
 		Post updatedPost = updatePostRequest.toEntity(LocalDateTime.now(), post, imageFileName);
-		updatedPost.updateUpdatedAt(LocalDateTime.now());
 
 		communityRepository.save(updatedPost);
 

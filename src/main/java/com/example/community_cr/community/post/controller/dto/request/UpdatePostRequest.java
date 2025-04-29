@@ -24,24 +24,26 @@ public class UpdatePostRequest {
 	@Size(max = 100)
 	private String content;
 
-	public Post toEntity(LocalDateTime createdAt, Post post) {
+	public Post toEntity(LocalDateTime updatedAt, Post post) {
 		return Post.builder()
 			.id(post.getId())
 			.imageFileName(post.getImageFileName())
 			.title(title == null ? post.getTitle() : title)
 			.content(content == null ? post.getContent() : content)
-			.createdAt(createdAt)
+			.createdAt(post.getCreatedAt())
+			.updatedAt(updatedAt)
 			.user(post.getUser())
 			.build();
 	}
 
-	public Post toEntity(LocalDateTime createdAt, Post post, String imageFileName) {
+	public Post toEntity(LocalDateTime updatedAt, Post post, String imageFileName) {
 		return Post.builder()
 			.id(post.getId())
 			.imageFileName(imageFileName)
 			.title(title == null ? post.getTitle() : title)
 			.content(content == null ? post.getContent() : content)
-			.createdAt(createdAt)
+			.createdAt(post.getCreatedAt())
+			.updatedAt(updatedAt)
 			.user(post.getUser())
 			.build();
 	}

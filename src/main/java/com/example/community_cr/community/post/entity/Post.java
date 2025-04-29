@@ -9,6 +9,7 @@ import com.example.community_cr.community.like.entity.Heart;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +32,7 @@ import lombok.NoArgsConstructor;
 public class Post {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(updatable = false)
 	private long id;
 
 	private String imageFileName;
@@ -40,6 +42,7 @@ public class Post {
 	private String content;
 
 	@Builder.Default
+	@Column(updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@Builder.Default
@@ -79,12 +82,8 @@ public class Post {
 		commentCount = commentList.size();
 	}
 
-	public void updateImageFileName(String imageFileName) {
+	public void updateImageFileName(String imageFileName, LocalDateTime updatedAt) {
 		this.imageFileName = imageFileName;
-	}
-
-	public void updateUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
 }
