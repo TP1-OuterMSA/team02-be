@@ -54,12 +54,16 @@ public class Post {
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Builder.Default
 	private List<Heart> heartList = new ArrayList<>();
-	private long heartCount;
+
+	@Builder.Default
+	private long heartCount = 0;
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Builder.Default
 	private List<Comment> commentList = new ArrayList<>();
-	private long commentCount;
+
+	@Builder.Default
+	private long commentCount = 0;
 
 	public void addHeart(Heart heart) {
 		heartList.add(heart);

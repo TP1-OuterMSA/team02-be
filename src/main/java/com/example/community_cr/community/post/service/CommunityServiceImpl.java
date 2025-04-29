@@ -47,7 +47,7 @@ public class CommunityServiceImpl implements CommunityService {
 		Post post = postRequest.toEntity(LocalDateTime.now(), imageFileName, user);
 		communityRepository.save(post);
 
-		return toOptionalDetailResponse(post, false);
+		return toOptionalDetailResponse(post, false, userId);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class CommunityServiceImpl implements CommunityService {
 		communityRepository.save(updatedPost);
 
 		return toOptionalDetailResponse(updatedPost,
-			likeRepository.existsById(HeartId.of(postId, userId)));
+			likeRepository.existsById(HeartId.of(postId, userId)), userId);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class CommunityServiceImpl implements CommunityService {
 		communityRepository.save(post);
 
 		return toOptionalDetailResponse(post,
-			likeRepository.existsById(HeartId.of(postId, userId)));
+			likeRepository.existsById(HeartId.of(postId, userId)), userId);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class CommunityServiceImpl implements CommunityService {
 		communityRepository.save(updatedPost);
 
 		return toOptionalDetailResponse(updatedPost,
-			likeRepository.existsById(HeartId.of(postId, userId)));
+			likeRepository.existsById(HeartId.of(postId, userId)), userId);
 	}
 
 	@Override
@@ -161,12 +161,12 @@ public class CommunityServiceImpl implements CommunityService {
 		List<CommentResponse> commentResponses = post.getCommentList().stream()
 			.map(comment -> {
 				boolean liked = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
-				return CommentResponse.from(comment, liked);
+				return CommentResponse.of(comment, liked);
 			})
 			.toList();
 
-		PostDetailResponse response = PostDetailResponse.from(post, postLikeStatus, commentResponses);
-		response.setImage(imageService.generatePresignedUrl(response.getImage()));
+		String image = imageService.generatePresignedUrl(post.getImageFileName());
+		PostDetailResponse response = PostDetailResponse.of(post, postLikeStatus, commentResponses, image);
 
 		return Optional.of(response);
 	}
@@ -189,10 +189,15 @@ public class CommunityServiceImpl implements CommunityService {
 		return post;
 	}
 
-	private Optional<PostDetailResponse> toOptionalDetailResponse(Post post, boolean likeStatus) {
-		PostDetailResponse response = PostDetailResponse.from(post, likeStatus);
-		response.setImage(
-			imageService.generatePresignedUrl(response.getImage()));
+	private Optional<PostDetailResponse> toOptionalDetailResponse(Post post, boolean likeStatus, long userId) {
+		String imageUrl = imageService.generatePresignedUrl(post.getImageFileName());
+		List<CommentResponse> commentResponses = post.getCommentList().stream()
+			.map(comment -> {
+				boolean liked = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
+				return CommentResponse.of(comment, liked);
+			})
+			.toList();
+		PostDetailResponse response = PostDetailResponse.of(post, likeStatus, commentResponses, imageUrl);
 		return Optional.of(response);
 	}
 }

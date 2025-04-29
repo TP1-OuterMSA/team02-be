@@ -29,30 +29,12 @@ public class PostDetailResponse {
 	private List<CommentResponse> commentResponseList;
 	private boolean likeStatus;
 
-	public static PostDetailResponse from(Post post, boolean likeStatus) {
+	public static PostDetailResponse of(Post post, boolean likeStatus, List<CommentResponse> commentResponses,
+		String imageUrl) {
 		return PostDetailResponse.builder()
 			.id(post.getId())
 			.userId(post.getUser().getId())
-			.image(post.getImageFileName())
-			.title(post.getTitle())
-			.content(post.getContent())
-			.createdAt(post.getCreatedAt())
-			.likeCount(post.getHeartCount())
-			.commentCount(post.getCommentCount())
-			.commentResponseList(
-				post.getCommentList().stream()
-					.map(CommentResponse::from)
-					.toList()
-			)
-			.likeStatus(likeStatus)
-			.build();
-	}
-
-	public static PostDetailResponse from(Post post, boolean likeStatus, List<CommentResponse> commentResponses) {
-		return PostDetailResponse.builder()
-			.id(post.getId())
-			.userId(post.getUser().getId())
-			.image(post.getImageFileName())
+			.image(imageUrl)
 			.title(post.getTitle())
 			.content(post.getContent())
 			.createdAt(post.getCreatedAt())

@@ -31,6 +31,7 @@ public class PostRequest {
 			.title(title)
 			.content(content)
 			.createdAt(createdAt)
+			.updatedAt(createdAt)
 			.user(user)
 			.build();
 	}

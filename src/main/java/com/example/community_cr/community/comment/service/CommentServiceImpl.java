@@ -32,8 +32,10 @@ public class CommentServiceImpl implements CommentService {
 			.orElseThrow(IllegalArgumentException::new);
 		Post post = communityRepository.findById(postId)
 			.orElseThrow(IllegalArgumentException::new);
+
 		Comment comment = commentRequest.toEntity(LocalDateTime.now(), post, user);
 		comment = commentRepository.save(comment);
+
 		post.addComment(comment);
 		communityRepository.save(post);
 		return Optional.of(CommentResponse.from(comment));
@@ -61,7 +63,7 @@ public class CommentServiceImpl implements CommentService {
 			throw new IllegalArgumentException("자신의 댓글만 삭제할 수 있습니다.");
 		}
 		Post post = comment.getPost();
-		
+
 		commentRepository.delete(comment);
 
 		post.removeComment(comment);

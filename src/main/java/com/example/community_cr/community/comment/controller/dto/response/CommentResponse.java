@@ -17,7 +17,9 @@ public class CommentResponse {
 	public final String content;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	public final LocalDateTime createdAt;
-	private boolean liked;
+
+	@Builder.Default
+	private boolean liked = false;
 
 	public static CommentResponse from(Comment comment) {
 		return CommentResponse.builder()
@@ -30,7 +32,7 @@ public class CommentResponse {
 			.build();
 	}
 
-	public static CommentResponse from(Comment comment, boolean liked) {
+	public static CommentResponse of(Comment comment, boolean liked) {
 		return CommentResponse.builder()
 			.commentId(comment.getId())
 			.userId(comment.getUser().getId())
