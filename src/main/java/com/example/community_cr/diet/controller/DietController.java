@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
-import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.controller.dto.response.NewFoodResponse;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
 
@@ -32,6 +32,12 @@ import lombok.RequiredArgsConstructor;
 public class DietController {
 	private final DietService dietService;
 	private final FoodService foodService;
+
+	@GetMapping("/test")
+	public ResponseEntity<Void> test(@RequestBody List<String> foodNames) {
+		foodService.saveNutritionTest(foodNames);
+		return ResponseEntity.ok().build();
+	}
 
 	@PostMapping("/saveDiet")
 	public ResponseEntity<DietResponse> saveDiet(
@@ -64,17 +70,21 @@ public class DietController {
 	}
 
 	@GetMapping("/getFoods")
-	public ResponseEntity<List<FoodResponse>> getFoods(
-		@RequestParam("pageNo") final int pageNo,
-		@RequestParam("pageSize") final int pageSize,
-		@RequestParam(name = "foodName", required = false) Optional<String> foodName
+	// public ResponseEntity<List<FoodResponse>> getFoods(
+	public ResponseEntity<List<NewFoodResponse>> getFoods(
+		// @RequestParam("pageNo") final int pageNo,
+		// @RequestParam("pageSize") final int pageSize,
+		// @RequestParam(name = "foodName", required = false) Optional<String> foodName
+		@RequestParam(name = "foodName") String foodName
 	) {
-		List<FoodResponse> foodResponses;
-		if (foodName.isPresent()) {
-			foodResponses = foodService.getFoods(pageNo, pageSize, foodName.get());
-		} else {
-			foodResponses = foodService.getFoods(pageNo, pageSize);
-		}
+		// List<FoodResponse> foodResponses;
+		// if (foodName.isPresent()) {
+		// 	foodResponses = foodService.getFoods(pageNo, pageSize, foodName.get());
+		// } else {
+		// 	foodResponses = foodService.getFoods(pageNo, pageSize);
+		// }
+		List<NewFoodResponse> foodResponses = foodService.getFoods(foodName);
+
 		return ResponseEntity.ok(foodResponses);
 	}
 
