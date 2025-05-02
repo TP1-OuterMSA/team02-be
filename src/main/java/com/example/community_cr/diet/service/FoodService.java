@@ -3,15 +3,10 @@ package com.example.community_cr.diet.service;
 import java.util.List;
 
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
-import com.example.community_cr.diet.controller.dto.response.NewFoodResponse;
+import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 
 public interface FoodService {
-	// List<FoodResponse> getFoods(int pageNo, int pageSize, String foodName);
-	List<NewFoodResponse> getFoods(String foodName);
-
-	// void saveNutrition(List<FoodRequest> foods);
-
-	void saveNutritionTest(List<String> foods);
+	List<FoodResponse> getFoods(int count, String foodName);
 
 	void saveNutrition(List<FoodRequest> foodRequests);
 }

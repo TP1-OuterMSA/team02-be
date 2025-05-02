@@ -20,4 +20,15 @@ public class FoodRequest {
 
 	@Min(value = 0, message = "최소 0 이상의 칼로리를 섭취하셔야됩니다.")
 	private double intakeKcal;
+
+	@Min(value = 0, message = "최소 0 이상의 양을 섭취하셔야됩니다.")
+	private double standardWeight;
+
+	@Min(value = 0, message = "최소 0 이상의 칼로리를 섭취하셔야됩니다.")
+	private double standardKcal;
+
+	@Override
+	public String toString() {
+		return foodName + "-" + standardWeight + "-" + standardKcal;
+	}
 }

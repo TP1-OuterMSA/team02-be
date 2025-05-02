@@ -1,4 +1,4 @@
-package com.example.community_cr.diet.controller.dto.request;
+package com.example.community_cr.diet.controller.dto.request.api;
 
 import java.util.ArrayList;
 import java.util.List;

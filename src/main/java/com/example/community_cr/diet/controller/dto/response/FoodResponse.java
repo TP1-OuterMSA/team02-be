@@ -1,6 +1,6 @@
 package com.example.community_cr.diet.controller.dto.response;
 
-import com.example.community_cr.diet.controller.dto.response.api.food.FoodItem;
+import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -8,26 +8,15 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FoodResponse {
-	private String foodCode;
-	private String upperFoodGroupName;
-	private String foodGroupName;
 	private String foodName;
 	private double foodWeight;
+	private double kcal;
 
-	@Builder.Default
-	private Double kcal = null;
-
-	public static FoodResponse from(FoodItem foodItem) {
+	public static FoodResponse from(FoodInfo foodInfo) {
 		return FoodResponse.builder()
-			.foodCode(foodItem.getFd_Code())
-			.upperFoodGroupName(foodItem.getUpper_Fd_Grupp_Nm())
-			.foodGroupName(foodItem.getFd_Grupp_Nm())
-			.foodName(foodItem.getFd_Nm())
-			.foodWeight(foodItem.getFd_Wgh())
+			.foodName(foodInfo.getName())
+			.foodWeight(foodInfo.getWeight())
+			.kcal(foodInfo.getKcal())
 			.build();
-	}
-
-	public void setKcal(double kcal) {
-		this.kcal = kcal;
 	}
 }

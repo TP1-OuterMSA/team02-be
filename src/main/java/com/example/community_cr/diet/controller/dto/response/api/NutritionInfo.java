@@ -1,5 +1,7 @@
 package com.example.community_cr.diet.controller.dto.response.api;
 
+import com.example.community_cr.diet.entity.Food;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +21,16 @@ public class NutritionInfo {
 	private double fat;
 	private double vitamin;
 	private double calcium;
+
+	public Food toEntity() {
+		return Food.builder()
+			.foodWeight(weight)
+			.carb(carb)
+			.foodName(name)
+			.protein(protein)
+			.fat(fat)
+			.kcal(kcal)
+			.build();
+	}
 }
 

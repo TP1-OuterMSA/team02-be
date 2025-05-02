@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class ApiResponse {
+public class AiResponse {
 	private String id;
 	private String provider;
 	private String model;
