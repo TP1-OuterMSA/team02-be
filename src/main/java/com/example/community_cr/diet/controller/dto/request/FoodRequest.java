@@ -12,12 +12,23 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 public class FoodRequest {
-	@NotBlank(message = "음식 코드를 입력해주세요.")
-	private String foodCode;
+	@NotBlank(message = "음식 이름을 입력해주세요.")
+	private String foodName;
 
 	@Min(value = 0, message = "최소 0 이상의 양을 섭취하셔야됩니다.")
 	private double intakeWeight;
 
 	@Min(value = 0, message = "최소 0 이상의 칼로리를 섭취하셔야됩니다.")
 	private double intakeKcal;
+
+	@Min(value = 0, message = "최소 0 이상의 양을 섭취하셔야됩니다.")
+	private double standardWeight;
+
+	@Min(value = 0, message = "최소 0 이상의 칼로리를 섭취하셔야됩니다.")
+	private double standardKcal;
+
+	@Override
+	public String toString() {
+		return foodName + "-" + standardWeight + "-" + standardKcal;
+	}
 }

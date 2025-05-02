@@ -55,30 +55,31 @@ public class DietServiceImpl implements DietService {
 	}
 
 	private void addDietFoodFromDietRequest(Diet diet, DietRequest dto) {
-		// 이미 diet에 포함된 foodCode들을 추출
+		// 이미 diet에 포함된 foodName들을 추출
 		Set<String> existingDietFoodCodes = diet.getFoods().stream()
-			.map(dietFood -> dietFood.getFood().getFoodCode())
+			.map(dietFood -> dietFood.getFood().getFoodName())
 			.collect(Collectors.toSet());
 
-		// 새롭게 추가할 foodCode만 필터링
-		List<String> foodCodes = dto.getFoods().stream()
-			.map(FoodRequest::getFoodCode)
+		// 새롭게 추가할 foodName 필터링
+		List<String> foodNames = dto.getFoods().stream()
+			.map(FoodRequest::getFoodName)
 			.filter(foodCode -> !existingDietFoodCodes.contains(foodCode))
 			.toList();
 
-		if (foodCodes.isEmpty()) {
+		if (foodNames.isEmpty()) {
 			throw new IllegalArgumentException("새롭게 추가할 음식이 존재하지 않습니다.");
 		}
 
-		List<Food> foods = foodRepository.findAllByFoodCodeIn(foodCodes);
+		// List<Food> foods = foodRepository.findAllByFoodCodeIn(foodNames);
+		List<Food> foods = foodRepository.findAllByFoodNameIn(foodNames);
 
 		// 존재하지 않는 음식 코드 검증
-		if (foods.size() != foodCodes.size()) {
+		if (foods.size() != foodNames.size()) {
 			Set<String> existingFoodCodes = foods.stream()
-				.map(Food::getFoodCode)
+				.map(Food::getFoodName)
 				.collect(Collectors.toSet());
 
-			List<String> notFoundFoodCodes = foodCodes.stream()
+			List<String> notFoundFoodCodes = foodNames.stream()
 				.filter(foodCode -> !existingFoodCodes.contains(foodCode))
 				.toList();
 
@@ -86,12 +87,12 @@ public class DietServiceImpl implements DietService {
 		}
 
 		Map<String, FoodRequest> foodRequestMap = dto.getFoods().stream()
-			.collect(Collectors.toMap(FoodRequest::getFoodCode, Function.identity()));
+			.collect(Collectors.toMap(FoodRequest::getFoodName, Function.identity()));
 
 		// DietFood 생성
 		List<DietFood> dietFoodsToAdd = foods.stream()
 			.map(food -> {
-				FoodRequest foodRequest = foodRequestMap.get(food.getFoodCode());
+				FoodRequest foodRequest = foodRequestMap.get(food.getFoodName());
 				if (foodRequest != null) {
 					return DietFood.from(
 						foodRequest.getIntakeWeight(),

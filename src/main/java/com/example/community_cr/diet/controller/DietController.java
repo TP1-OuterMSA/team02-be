@@ -65,16 +65,11 @@ public class DietController {
 
 	@GetMapping("/getFoods")
 	public ResponseEntity<List<FoodResponse>> getFoods(
-		@RequestParam("pageNo") final int pageNo,
-		@RequestParam("pageSize") final int pageSize,
-		@RequestParam(name = "foodName", required = false) Optional<String> foodName
+		@RequestParam(value = "count", required = false, defaultValue = "3") final int count,
+		@RequestParam(name = "foodName") String foodName
 	) {
-		List<FoodResponse> foodResponses;
-		if (foodName.isPresent()) {
-			foodResponses = foodService.getFoods(pageNo, pageSize, foodName.get());
-		} else {
-			foodResponses = foodService.getFoods(pageNo, pageSize);
-		}
+		List<FoodResponse> foodResponses = foodService.getFoods(count, foodName);
+
 		return ResponseEntity.ok(foodResponses);
 	}
 

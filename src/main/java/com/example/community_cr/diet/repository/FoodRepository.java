@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 import com.example.community_cr.diet.entity.Food;
 
 public interface FoodRepository extends JpaRepository<Food, Long> {
-	List<Food> findAllByFoodCodeIn(List<String> foods);
+	@Query("SELECT f.foodName FROM Food f WHERE f.foodName IN :foodNames")
+	List<String> findExistingFoodNames(@Param("foodNames") List<String> foodNames);
 
-	@Query("SELECT f.foodCode FROM Food f WHERE f.foodCode IN :foodCodes")
-	List<String> findExistingFoodCodes(@Param("foodCodes") List<String> foodCodes);
+	List<Food> findAllByFoodNameIn(List<String> foodNames);
 }

@@ -17,15 +17,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Food {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(unique = true, nullable = false, updatable = false)
-	private String foodCode;
-
-	@Column(nullable = false)
 	private String foodName;
 
 	//칼로리,탄단지 이외 추가 요소 필요
