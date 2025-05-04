@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
 
@@ -80,6 +81,15 @@ public class DietController {
 			.collect(Collectors.toList()));
 	}
 
+	@GetMapping("/getSchoolMeal")
+	public ResponseEntity<List<FoodResponse>> getSchoolMeal(
+		@RequestParam(name = "date") LocalDate date,
+		@RequestParam(name = "mealType") MealType mealType
+	) {
+		List<FoodResponse> foods = foodService.getSchoolMeal(date, mealType);
+		return ResponseEntity.ok(foods);
+	}
+
 	@DeleteMapping("/deleteDiet")
 	public ResponseEntity<Void> deleteDiet(
 			@RequestHeader("user-id") long userId,
@@ -96,7 +106,4 @@ public class DietController {
 	) {
 		return ResponseEntity.ok(dietService.analyzeNutrition(userId, date));
 	}
-
-
-
 }

@@ -1,5 +1,7 @@
 package com.example.community_cr.diet.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +19,12 @@ import com.example.community_cr.diet.controller.dto.response.api.AiResponse;
 import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
 import com.example.community_cr.diet.controller.dto.response.api.NutritionInfo;
 import com.example.community_cr.diet.entity.Food;
+import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.repository.FoodRepository;
+import com.example.community_cr.school_meal.entity.Meal;
+import com.example.community_cr.school_meal.entity.MealMenu;
+import com.example.community_cr.school_meal.entity.Menu;
+import com.example.community_cr.school_meal.repository.MealRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,30 +39,34 @@ import lombok.extern.slf4j.Slf4j;
 public class FoodServiceImpl implements FoodService {
 	private final RestTemplate restTemplate;
 	private final FoodRepository foodRepository;
+	private final MealRepository mealRepository;
 
 	@Value("${api.ai.key}")
-	private String aiApiKey;
+	private String aiKey;
 
 	@Value("${api.ai.model}")
-	private String aiApiModel;
+	private String aiModel;
 
 	@Value("${api.ai.url}")
-	private String aiApiUrl;
+	private String aiUrl;
 
 	@Value("${api.ai.nutrition-system-message}")
-	private String aiApiNutritionSystemMessage;
+	private String nutritionSystemMessage;
+
+	@Value("${api.ai.school-meal-nutrition-system-message}")
+	private String schoolMealNutritionSystemMessage;
 
 	@Value("${api.ai.food-system-message-format}")
-	private String aiApiFoodSystemMessageFormat;
+	private String foodSystemMessageFormat;
 
 	@Override
 	public List<FoodResponse> getFoods(int count, String foodName) {
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
-		String aiApiFoodSystemMessage = String.format(aiApiFoodSystemMessageFormat, count);
+		String aiApiFoodSystemMessage = String.format(foodSystemMessageFormat, count);
 
-		ApiRequest apiRequest = new ApiRequest(aiApiModel, aiApiFoodSystemMessage, foodName);
+		ApiRequest apiRequest = new ApiRequest(aiModel, aiApiFoodSystemMessage, foodName);
 		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -71,6 +82,39 @@ public class FoodServiceImpl implements FoodService {
 		}
 
 		return foodInfos.stream()
+			.map(FoodResponse::from)
+			.toList();
+	}
+
+	@Override
+	public List<FoodResponse> getSchoolMeal(LocalDate date, MealType mealType) {
+		if (mealType == MealType.SNACK) {
+			throw new IllegalArgumentException("식사 종류로 간식은 입력할 수 없습니다.");
+		}
+
+		Meal meal = mealRepository.findByDayInfoAndMealType(date.format(DateTimeFormatter.ISO_LOCAL_DATE), mealType)
+			.orElseThrow(() -> new IllegalArgumentException("아직 해당 날짜의 학식 정보가 입력되지 않았습니다."));
+
+		List<String> menuNames = meal.getMealMenus().stream()
+			.map(MealMenu::getMenu)
+			.map(Menu::getName)
+			.toList();
+
+		List<Food> existFoods = foodRepository.findAllByFoodNameIn(menuNames);
+		List<String> foodNames = existFoods.stream()
+			.map(Food::getFoodName)
+			.toList();
+
+		if (foodNames.size() != menuNames.size()) {
+			List<String> notFoundMenuNames = menuNames.stream()
+				.filter(menuName -> !foodNames.contains(menuName))
+				.toList();
+
+			List<Food> foods = getFoodNutritionByAiApi(notFoundMenuNames, schoolMealNutritionSystemMessage);
+			existFoods.addAll(foods);
+		}
+
+		return existFoods.stream()
 			.map(FoodResponse::from)
 			.toList();
 	}
@@ -94,8 +138,12 @@ public class FoodServiceImpl implements FoodService {
 			return;
 		}
 
-		String userMessage = String.join(", ", notFoundFoodRequests);
-		ApiRequest apiRequest = new ApiRequest(aiApiModel, aiApiNutritionSystemMessage, userMessage);
+		getFoodNutritionByAiApi(notFoundFoodRequests, nutritionSystemMessage);
+	}
+
+	private List<Food> getFoodNutritionByAiApi(List<String> foodInfos, String systemMessage) {
+		String userMessage = String.join(", ", foodInfos);
+		ApiRequest apiRequest = new ApiRequest(aiModel, systemMessage, userMessage);
 		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -114,15 +162,16 @@ public class FoodServiceImpl implements FoodService {
 			.map(NutritionInfo::toEntity)
 			.toList();
 		foodRepository.saveAll(foods);
+		return foods;
 	}
 
 	private String getCleanedJsonFromAiApiRequest(ApiRequest apiRequest) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", "Bearer " + aiApiKey);
+		headers.set("Authorization", "Bearer " + aiKey);
 
 		HttpEntity<ApiRequest> requestEntity = new HttpEntity<>(apiRequest, headers);
-		AiResponse aiApiResponse = restTemplate.postForObject(aiApiUrl, requestEntity, AiResponse.class);
+		AiResponse aiApiResponse = restTemplate.postForObject(aiUrl, requestEntity, AiResponse.class);
 
 		assert aiApiResponse != null;
 		assert aiApiResponse.getChoices()
