@@ -7,14 +7,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
@@ -83,7 +90,7 @@ public class DietController {
 
 	@GetMapping("/getSchoolMeal")
 	public ResponseEntity<List<FoodResponse>> getSchoolMeal(
-		@RequestParam(name = "date") LocalDate date,
+		@RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
 		@RequestParam(name = "mealType") MealType mealType
 	) {
 		List<FoodResponse> foods = foodService.getSchoolMeal(date, mealType);
@@ -92,8 +99,8 @@ public class DietController {
 
 	@DeleteMapping("/deleteDiet")
 	public ResponseEntity<Void> deleteDiet(
-			@RequestHeader("user-id") long userId,
-			@RequestParam("dietId") long dietId
+		@RequestHeader("user-id") long userId,
+		@RequestParam("dietId") long dietId
 	) {
 		dietService.deleteDiet(userId, dietId);
 		return ResponseEntity.noContent().build();
@@ -101,8 +108,8 @@ public class DietController {
 
 	@GetMapping("/analyze")
 	public ResponseEntity<NutritionAnalysisResponse> analyzeNutrition(
-			@RequestHeader("user-id") long userId,
-			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+		@RequestHeader("user-id") long userId,
+		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 	) {
 		return ResponseEntity.ok(dietService.analyzeNutrition(userId, date));
 	}
