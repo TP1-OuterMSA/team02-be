@@ -7,15 +7,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
@@ -84,5 +79,24 @@ public class DietController {
 			.map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)) // yyyy-MM-dd
 			.collect(Collectors.toList()));
 	}
+
+	@DeleteMapping("/deleteDiet")
+	public ResponseEntity<Void> deleteDiet(
+			@RequestHeader("user-id") long userId,
+			@RequestParam("dietId") long dietId
+	) {
+		dietService.deleteDiet(userId, dietId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/analyze")
+	public ResponseEntity<NutritionAnalysisResponse> analyzeNutrition(
+			@RequestHeader("user-id") long userId,
+			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+	) {
+		return ResponseEntity.ok(dietService.analyzeNutrition(userId, date));
+	}
+
+
 
 }

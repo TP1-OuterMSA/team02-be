@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import org.springframework.stereotype.Service;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
@@ -139,4 +140,54 @@ public class DietServiceImpl implements DietService {
 
 		return dietRepository.findDietDatesBetween(startDate, endDate);
 	}
+
+	@Override
+	public void deleteDiet(long userId, long dietId) {
+		Diet diet = dietRepository.findById(dietId)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
+
+		if (diet.getUser().getId() != userId) {
+			throw new IllegalArgumentException("자신의 식단만 삭제할 수 있습니다.");
+		}
+
+		dietFoodRepository.deleteAll(diet.getFoods());
+
+		dietRepository.delete(diet);
+	}
+
+	@Override
+	public NutritionAnalysisResponse analyzeNutrition(long userId, LocalDate date) {
+		List<Diet> dietList = dietRepository.findAllByDateAndUserId(date, userId);
+
+		if (dietList.isEmpty()) {
+			throw new IllegalArgumentException("해당 날짜에 등록된 식단이 없습니다.");
+		}
+
+		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
+
+		for (Diet diet : dietList) {
+			for (DietFood dietFood : diet.getFoods()) {
+				Food food = dietFood.getFood();
+				double ratio = dietFood.getIntakeWeight() / food.getFoodWeight();
+
+				totalKcal += dietFood.getIntakeKcal();
+				carb += food.getCarb() * ratio;
+				protein += food.getProtein() * ratio;
+				fat += food.getFat() * ratio;
+			}
+		}
+
+		return NutritionAnalysisResponse.builder()
+				.date(date)
+				.totalKcal(totalKcal)
+				.carb(carb)
+				.protein(protein)
+				.fat(fat)
+				.vitamin(0)
+				.calcium(0)
+				.build();
+	}
+
+
+
 }
