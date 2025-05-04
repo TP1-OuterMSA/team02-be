@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
 
@@ -83,6 +84,15 @@ public class DietController {
 		return ResponseEntity.ok(dates.stream()
 			.map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)) // yyyy-MM-dd
 			.collect(Collectors.toList()));
+	}
+
+	@GetMapping("/getSchoolMeal")
+	public ResponseEntity<List<FoodResponse>> getSchoolMeal(
+		@RequestParam(name = "date") LocalDate date,
+		@RequestParam(name = "mealType") MealType mealType
+	) {
+		List<FoodResponse> foods = foodService.getSchoolMeal(date, mealType);
+		return ResponseEntity.ok(foods);
 	}
 
 }

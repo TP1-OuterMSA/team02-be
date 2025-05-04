@@ -25,7 +25,7 @@ public class ConsumerService {
 	private final MenuRepository menuRepository;
 	private final MealMenuRepository mealMenuRepository;
 
-	@KafkaListener(topics = "meal.web.crawler.updated", groupId = "web-Crawler")
+	@KafkaListener(topics = "meal.web.crawler.updated", groupId = "meal-nutrition")
 	@Transactional
 	public void consume(MealEvent event) {
 		MealType mealType = MealType.from(event.getMealType());
