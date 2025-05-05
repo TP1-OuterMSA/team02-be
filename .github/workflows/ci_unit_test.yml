@@ -3,8 +3,7 @@ name: Unit Test
 on:
   pull_request:
     branches:
-      # 간단한 CI를 원한다면 dump를 develop으로 변경 후 사용
-      - 'dump'
+      - 'develop'
     types: [ opened, synchronize, reopened ]
 
 jobs:
