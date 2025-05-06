@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.community_cr.common.exception.ApiErrorException;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.api.AiResponse;
+import com.example.community_cr.diet.controller.dto.response.api.ApiErrorResponse;
 import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
 import com.example.community_cr.diet.controller.dto.response.api.NutritionInfo;
 import com.example.community_cr.diet.entity.Food;
@@ -166,13 +168,41 @@ public class FoodServiceImpl implements FoodService {
 		return foods;
 	}
 
+	private void processApiResponseError(String aiApiResponseContent) {
+		ObjectMapper mapper = new ObjectMapper();
+		ApiErrorResponse apiErrorResponse;
+		try {
+			apiErrorResponse = mapper.readValue(aiApiResponseContent, ApiErrorResponse.class);
+		} catch (JsonProcessingException e) {
+			throw new ApiErrorException(null,
+				"API 응답 처리 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.\n message: " + aiApiResponseContent);
+		}
+		assert apiErrorResponse != null;
+		if (apiErrorResponse.getError().getCode() == 429) {
+			throw new ApiErrorException(429, "API 일일 한도가 초과되었습니다. 내일 다시 시도해주세요.");
+		}
+		throw new ApiErrorException(apiErrorResponse);
+	}
+
 	private String getCleanedJsonFromAiApiRequest(ApiRequest apiRequest) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", "Bearer " + aiKey);
 
 		HttpEntity<ApiRequest> requestEntity = new HttpEntity<>(apiRequest, headers);
-		AiResponse aiApiResponse = restTemplate.postForObject(aiUrl, requestEntity, AiResponse.class);
+		String aiApiResponseContent = restTemplate.postForObject(aiUrl, requestEntity, String.class);
+
+		ObjectMapper mapper = new ObjectMapper();
+		AiResponse aiApiResponse;
+		try {
+			aiApiResponse = mapper.readValue(aiApiResponseContent, AiResponse.class);
+		} catch (JsonProcessingException e) {
+			log.info("start : {}", aiApiResponseContent);
+			processApiResponseError(aiApiResponseContent);
+			log.info("end");
+			throw new ApiErrorException(null,
+				"API 응답 처리 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.\n message: " + aiApiResponseContent);
+		}
 
 		assert aiApiResponse != null;
 		assert aiApiResponse.getChoices()
