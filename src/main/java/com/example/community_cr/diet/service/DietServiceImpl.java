@@ -10,12 +10,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import org.springframework.stereotype.Service;
 
+import com.example.community_cr.diet.controller.dto.request.DeleteDietFoodRequest;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import com.example.community_cr.diet.entity.Diet;
 import com.example.community_cr.diet.entity.DietFood;
 import com.example.community_cr.diet.entity.Food;
@@ -144,7 +145,7 @@ public class DietServiceImpl implements DietService {
 	@Override
 	public void deleteDiet(long userId, long dietId) {
 		Diet diet = dietRepository.findById(dietId)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
 
 		if (diet.getUser().getId() != userId) {
 			throw new IllegalArgumentException("자신의 식단만 삭제할 수 있습니다.");
@@ -153,6 +154,22 @@ public class DietServiceImpl implements DietService {
 		dietFoodRepository.deleteAll(diet.getFoods());
 
 		dietRepository.delete(diet);
+	}
+
+	@Override
+	public void deleteDietFoods(long userId, long dietId, DeleteDietFoodRequest deleteDietFoodRequest) {
+		Diet diet = dietRepository.findById(dietId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
+
+		if (diet.getUser().getId() != userId) {
+			throw new IllegalArgumentException("자신의 식단 음식만 삭제할 수 있습니다.");
+		}
+
+		dietFoodRepository.deleteAllById(deleteDietFoodRequest.getFoodIds());
+
+		if (!dietFoodRepository.existsByDietId(dietId)) {
+			dietRepository.delete(diet);
+		}
 	}
 
 	@Override
@@ -178,16 +195,13 @@ public class DietServiceImpl implements DietService {
 		}
 
 		return NutritionAnalysisResponse.builder()
-				.date(date)
-				.totalKcal(totalKcal)
-				.carb(carb)
-				.protein(protein)
-				.fat(fat)
-				.vitamin(0)
-				.calcium(0)
-				.build();
+			.date(date)
+			.totalKcal(totalKcal)
+			.carb(carb)
+			.protein(protein)
+			.fat(fat)
+			.vitamin(0)
+			.calcium(0)
+			.build();
 	}
-
-
-
 }

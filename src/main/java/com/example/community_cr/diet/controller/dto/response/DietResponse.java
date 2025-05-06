@@ -27,7 +27,7 @@ public class DietResponse {
 			.date(diet.getDate())
 			.type(diet.getType())
 			.foods(diet.getFoods().stream()
-				.map(food -> new FoodDto(food.getFood().getFoodName(),
+				.map(food -> new FoodDto(food.getId(), food.getFood().getFoodName(),
 					food.getIntakeWeight(), food.getIntakeKcal()))
 				.toList())
 			.recommendKcal(recommendKcal)
@@ -37,6 +37,7 @@ public class DietResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class FoodDto {
+		private long foodId;
 		private String foodName;
 		private double intakeWeight;
 		private double intakeKcal;
