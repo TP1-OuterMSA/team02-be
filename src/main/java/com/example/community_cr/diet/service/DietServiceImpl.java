@@ -174,11 +174,11 @@ public class DietServiceImpl implements DietService {
 	}
 
 	@Override
-	public NutritionAnalysisResponse analyzeNutrition(long userId, LocalDate date) {
+	public Optional<NutritionAnalysisResponse> analyzeNutrition(long userId, LocalDate date) {
 		List<Diet> dietList = dietRepository.findAllByDateAndUserId(date, userId);
 
 		if (dietList.isEmpty()) {
-			throw new IllegalArgumentException("해당 날짜에 등록된 식단이 없습니다.");
+			return Optional.of(NutritionAnalysisResponse.from(date));
 		}
 
 		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
@@ -195,7 +195,7 @@ public class DietServiceImpl implements DietService {
 			}
 		}
 
-		return NutritionAnalysisResponse.builder()
+		NutritionAnalysisResponse nutritionAnalysisResponse = NutritionAnalysisResponse.builder()
 			.date(date)
 			.totalKcal(totalKcal)
 			.carb(carb)
@@ -204,5 +204,7 @@ public class DietServiceImpl implements DietService {
 			.vitamin(0)
 			.calcium(0)
 			.build();
+
+		return Optional.of(nutritionAnalysisResponse);
 	}
 }

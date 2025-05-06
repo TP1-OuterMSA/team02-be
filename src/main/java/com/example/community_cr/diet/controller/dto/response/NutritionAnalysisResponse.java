@@ -15,13 +15,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NutritionAnalysisResponse {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate date;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate date;
 
-    private double totalKcal;
-    private double carb;
-    private double protein;
-    private double fat;
-    private double vitamin;
-    private double calcium;
+	private double totalKcal;
+	private double carb;
+	private double protein;
+	private double fat;
+	private double vitamin;
+	private double calcium;
+
+	public static NutritionAnalysisResponse from(LocalDate date) {
+		return NutritionAnalysisResponse.builder()
+			.date(date)
+			.totalKcal(0)
+			.carb(0)
+			.protein(0)
+			.fat(0)
+			.vitamin(0)
+			.calcium(0)
+			.build();
+	}
 }

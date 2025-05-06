@@ -120,6 +120,8 @@ public class DietController {
 		@RequestHeader("user-id") long userId,
 		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 	) {
-		return ResponseEntity.ok(dietService.analyzeNutrition(userId, date));
+		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
 	}
 }

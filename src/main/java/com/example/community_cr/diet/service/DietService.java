@@ -20,7 +20,7 @@ public interface DietService {
 
 	void deleteDiet(long userId, long dietId);
 
-	NutritionAnalysisResponse analyzeNutrition(long userId, LocalDate date);
+	Optional<NutritionAnalysisResponse> analyzeNutrition(long userId, LocalDate date);
 
 	void deleteDietFood(long userId, long dietFoodId);
 }
