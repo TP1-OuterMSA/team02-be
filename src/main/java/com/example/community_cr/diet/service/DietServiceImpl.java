@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.example.community_cr.diet.controller.dto.request.DeleteDietFoodRequest;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
@@ -157,17 +156,19 @@ public class DietServiceImpl implements DietService {
 	}
 
 	@Override
-	public void deleteDietFoods(long userId, long dietId, DeleteDietFoodRequest deleteDietFoodRequest) {
-		Diet diet = dietRepository.findById(dietId)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
+	public void deleteDietFood(long userId, long dietFoodId) {
+		DietFood dietFood = dietFoodRepository.findById(dietFoodId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단 음식입니다."));
+
+		Diet diet = dietFood.getDiet();
 
 		if (diet.getUser().getId() != userId) {
 			throw new IllegalArgumentException("자신의 식단 음식만 삭제할 수 있습니다.");
 		}
 
-		dietFoodRepository.deleteAllById(deleteDietFoodRequest.getFoodIds());
+		dietFoodRepository.delete(dietFood);
 
-		if (!dietFoodRepository.existsByDietId(dietId)) {
+		if (!dietFoodRepository.existsByDietId(diet.getId())) {
 			dietRepository.delete(diet);
 		}
 	}

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.community_cr.diet.controller.dto.request.DeleteDietFoodRequest;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
@@ -107,13 +106,12 @@ public class DietController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@DeleteMapping("/deleteDietFoods")
-	public ResponseEntity<Void> deleteDietFoods(
+	@DeleteMapping("/deleteDietFood")
+	public ResponseEntity<Void> deleteDietFood(
 		@RequestHeader("user-id") long userId,
-		@RequestParam("dietId") long dietId,
-		@RequestBody DeleteDietFoodRequest deleteDietFoodRequest
+		@RequestParam("dietFoodId") long dietFoodId
 	) {
-		dietService.deleteDietFoods(userId, dietId, deleteDietFoodRequest);
+		dietService.deleteDietFood(userId, dietFoodId);
 		return ResponseEntity.noContent().build();
 	}
 
