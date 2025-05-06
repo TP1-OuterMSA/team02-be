@@ -69,16 +69,17 @@ public class FoodServiceImpl implements FoodService {
 		ApiRequest apiRequest = new ApiRequest(aiModel, aiApiFoodSystemMessage, foodName);
 		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest);
 
+		log.info(cleanedJson);
 		ObjectMapper mapper = new ObjectMapper();
 		List<FoodInfo> foodInfos;
 		try {
 			foodInfos = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
-			throw new IllegalArgumentException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
+			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 		if (foodInfos.isEmpty()) {
-			throw new IllegalArgumentException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
+			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 
 		return foodInfos.stream()
