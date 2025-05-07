@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.community_cr.common.config.AiApiConfig;
 import com.example.community_cr.common.exception.ApiErrorException;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
@@ -39,37 +39,21 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional
 public class FoodServiceImpl implements FoodService {
+	private final AiApiConfig aiApiConfig;
 	private final RestTemplate restTemplate;
+
 	private final FoodRepository foodRepository;
 	private final MealRepository mealRepository;
-
-	@Value("${api.ai.key}")
-	private String aiKey;
-
-	@Value("${api.ai.model}")
-	private String aiModel;
-
-	@Value("${api.ai.url}")
-	private String aiUrl;
-
-	@Value("${api.ai.nutrition-system-message}")
-	private String nutritionSystemMessage;
-
-	@Value("${api.ai.school-meal-nutrition-system-message}")
-	private String schoolMealNutritionSystemMessage;
-
-	@Value("${api.ai.food-system-message-format}")
-	private String foodSystemMessageFormat;
 
 	@Override
 	public List<FoodResponse> getFoods(int count, String foodName) {
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
-		String aiApiFoodSystemMessage = String.format(foodSystemMessageFormat, count);
+		String aiApiFoodSystemMessage = String.format(aiApiConfig.getFoodSystemMessageFormat(), count);
 
-		ApiRequest apiRequest = new ApiRequest(aiModel, aiApiFoodSystemMessage, foodName);
-		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest);
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getAiModel(), aiApiFoodSystemMessage, foodName);
+		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest, aiApiConfig.getAiSearchFoodKey());
 
 		log.info(cleanedJson);
 		ObjectMapper mapper = new ObjectMapper();
@@ -113,7 +97,8 @@ public class FoodServiceImpl implements FoodService {
 				.filter(menuName -> !foodNames.contains(menuName))
 				.toList();
 
-			List<Food> foods = getFoodNutritionByAiApi(notFoundMenuNames, schoolMealNutritionSystemMessage);
+			List<Food> foods = getFoodNutritionByAiApi(notFoundMenuNames, aiApiConfig.getNutritionSystemMessage(),
+				aiApiConfig.getAiSchoolMealKey());
 			existFoods.addAll(foods);
 		}
 
@@ -141,13 +126,14 @@ public class FoodServiceImpl implements FoodService {
 			return;
 		}
 
-		getFoodNutritionByAiApi(notFoundFoodRequests, nutritionSystemMessage);
+		getFoodNutritionByAiApi(notFoundFoodRequests, aiApiConfig.getNutritionSystemMessage(),
+			aiApiConfig.getAiNutritionKey());
 	}
 
-	private List<Food> getFoodNutritionByAiApi(List<String> foodInfos, String systemMessage) {
+	private List<Food> getFoodNutritionByAiApi(List<String> foodInfos, String systemMessage, String apiKey) {
 		String userMessage = String.join(", ", foodInfos);
-		ApiRequest apiRequest = new ApiRequest(aiModel, systemMessage, userMessage);
-		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest);
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getAiModel(), systemMessage, userMessage);
+		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest, apiKey);
 
 		ObjectMapper mapper = new ObjectMapper();
 		List<NutritionInfo> nutritionInfos;
@@ -184,13 +170,13 @@ public class FoodServiceImpl implements FoodService {
 		throw new ApiErrorException(apiErrorResponse);
 	}
 
-	private String getCleanedJsonFromAiApiRequest(ApiRequest apiRequest) {
+	private String getCleanedJsonFromAiApiRequest(ApiRequest apiRequest, String apiKey) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", "Bearer " + aiKey);
+		headers.set("Authorization", "Bearer " + apiKey);
 
 		HttpEntity<ApiRequest> requestEntity = new HttpEntity<>(apiRequest, headers);
-		String aiApiResponseContent = restTemplate.postForObject(aiUrl, requestEntity, String.class);
+		String aiApiResponseContent = restTemplate.postForObject(aiApiConfig.getAiUrl(), requestEntity, String.class);
 
 		ObjectMapper mapper = new ObjectMapper();
 		AiResponse aiApiResponse;
