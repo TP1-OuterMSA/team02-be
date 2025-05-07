@@ -52,8 +52,8 @@ public class FoodServiceImpl implements FoodService {
 		}
 		String aiApiFoodSystemMessage = String.format(aiApiConfig.getFoodSystemMessageFormat(), count);
 
-		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getAiModel(), aiApiFoodSystemMessage, foodName);
-		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest, aiApiConfig.getAiSearchFoodKey());
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiFoodSystemMessage, foodName);
+		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest, aiApiConfig.getSearchFoodKey());
 
 		log.info(cleanedJson);
 		ObjectMapper mapper = new ObjectMapper();
@@ -98,7 +98,7 @@ public class FoodServiceImpl implements FoodService {
 				.toList();
 
 			List<Food> foods = getFoodNutritionByAiApi(notFoundMenuNames, aiApiConfig.getNutritionSystemMessage(),
-				aiApiConfig.getAiSchoolMealKey());
+				aiApiConfig.getSchoolMealKey());
 			existFoods.addAll(foods);
 		}
 
@@ -127,12 +127,12 @@ public class FoodServiceImpl implements FoodService {
 		}
 
 		getFoodNutritionByAiApi(notFoundFoodRequests, aiApiConfig.getNutritionSystemMessage(),
-			aiApiConfig.getAiNutritionKey());
+			aiApiConfig.getAnalyzeNutritionKey());
 	}
 
 	private List<Food> getFoodNutritionByAiApi(List<String> foodInfos, String systemMessage, String apiKey) {
 		String userMessage = String.join(", ", foodInfos);
-		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getAiModel(), systemMessage, userMessage);
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), systemMessage, userMessage);
 		String cleanedJson = getCleanedJsonFromAiApiRequest(apiRequest, apiKey);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -176,7 +176,7 @@ public class FoodServiceImpl implements FoodService {
 		headers.set("Authorization", "Bearer " + apiKey);
 
 		HttpEntity<ApiRequest> requestEntity = new HttpEntity<>(apiRequest, headers);
-		String aiApiResponseContent = restTemplate.postForObject(aiApiConfig.getAiUrl(), requestEntity, String.class);
+		String aiApiResponseContent = restTemplate.postForObject(aiApiConfig.getUrl(), requestEntity, String.class);
 
 		ObjectMapper mapper = new ObjectMapper();
 		AiResponse aiApiResponse;
