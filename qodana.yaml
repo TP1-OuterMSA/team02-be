@@ -1,0 +1,6 @@
+profile:
+  name: qodana.recommended
+
+linter:
+  disabled-inspections:
+    - UnknownHttpHeader
