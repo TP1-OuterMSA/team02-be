@@ -25,4 +25,10 @@ public class DietRequest {
 
 	@NotEmpty(message = "최소 1개 이상의 음식 이름이 필요합니다.")
 	private List<FoodRequest> foods;
+
+	public List<String> getFoodNames() {
+		return foods.stream()
+			.map(FoodRequest::getFoodName)
+			.toList();
+	}
 }

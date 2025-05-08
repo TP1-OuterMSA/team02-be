@@ -41,7 +41,7 @@ public class DietController {
 		@RequestHeader("user-id") long userId,
 		@RequestBody @Valid DietRequest dto
 	) {
-		foodService.saveNutrition(dto.getFoods());
+		foodService.saveDietNutrition(dto.getFoodNames());
 		Optional<DietResponse> response = dietService.saveDiet(userId, dto);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));

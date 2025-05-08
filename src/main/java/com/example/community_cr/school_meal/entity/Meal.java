@@ -3,6 +3,7 @@ package com.example.community_cr.school_meal.entity;
 import java.util.List;
 
 import com.example.community_cr.diet.entity.MealType;
+import com.example.kafka_schemas.MealEvent;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -46,4 +47,20 @@ public class Meal {
 
 	@OneToMany(mappedBy = "meal", cascade = CascadeType.ALL)
 	private List<MealMenu> mealMenus;
+
+	public static Meal of(String dayInfo, MealType mealType) {
+		return Meal.builder()
+			.dayInfo(dayInfo)
+			.mealType(mealType)
+			.build();
+	}
+
+	public static Meal from(MealEvent mealEvent) {
+		String dayInfo = mealEvent.getDate();
+		MealType mealType = MealType.from(mealEvent.getMealType());
+		return Meal.builder()
+			.dayInfo(dayInfo)
+			.mealType(mealType)
+			.build();
+	}
 }
