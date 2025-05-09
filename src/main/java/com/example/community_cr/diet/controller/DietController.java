@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
@@ -121,6 +122,17 @@ public class DietController {
 		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 	) {
 		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
+	}
+
+	@GetMapping("/analyzeDay")
+	public ResponseEntity<DayNutritionAnalysisResponse> analyzeDayNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+		@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+	) {
+		Optional<DayNutritionAnalysisResponse> response = dietService.dayAnalyzeNutrition(userId, startDate, endDate);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
 	}

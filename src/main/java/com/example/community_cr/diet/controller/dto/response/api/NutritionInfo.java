@@ -19,8 +19,6 @@ public class NutritionInfo {
 	private double carb;
 	private double protein;
 	private double fat;
-	private double vitamin;
-	private double calcium;
 
 	public Food toEntity() {
 		return Food.builder()
