@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 
 public interface DietService {
 	Optional<DietResponse> saveDiet(long userId, DietRequest dto);
@@ -16,4 +17,6 @@ public interface DietService {
 	List<DietResponse> getDiets(long userId, LocalDate date);
 
 	List<LocalDate> getDietDates(long userId, YearMonth month);
+
+	WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count);
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -89,5 +90,14 @@ public class DietController {
 			.map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)) // yyyy-MM-dd
 			.collect(Collectors.toList()));
 	}
+	@GetMapping("/weekly-nutrition")
+	public ResponseEntity<WeeklyNutritionResponse> getWeeklyNutrition(
+			@RequestHeader("user-id") long userId,
+			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			@RequestParam(name = "count", required = false, defaultValue = "7") int count
+	) {
+		return ResponseEntity.ok(dietService.getWeeklyNutrition(userId, date, count));
+	}
+
 
 }

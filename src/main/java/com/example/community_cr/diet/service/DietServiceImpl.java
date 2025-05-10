@@ -2,14 +2,13 @@ package com.example.community_cr.diet.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import org.springframework.stereotype.Service;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
@@ -138,4 +137,48 @@ public class DietServiceImpl implements DietService {
 
 		return dietRepository.findDietDatesBetween(startDate, endDate);
 	}
+
+	public WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count) {
+		List<WeeklyNutritionDto> result = new ArrayList<>();
+
+		for (int i = 0; i < count; i++) {
+			LocalDate endDate = date.minusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
+			LocalDate startDate = endDate.minusDays(6);
+
+			List<Diet> weeklyDiets = dietRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+
+			double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
+
+			for (Diet diet : weeklyDiets) {
+				for (DietFood df : diet.getFoods()) {
+					Food food = df.getFood();
+					double ratio = df.getIntakeWeight() / food.getFoodWeight(); // 섭취 비율
+
+					totalCarb += food.getCarb() * ratio;
+					totalProtein += food.getProtein() * ratio;
+					totalFat += food.getFat() * ratio;
+					totalKcal += food.getKcal() * ratio;
+				}
+			}
+
+			double totalMacro = totalCarb + totalProtein + totalFat;
+
+			double carbRatio = (totalMacro == 0) ? 0 : (totalCarb / totalMacro) * 100;
+			double proteinRatio = (totalMacro == 0) ? 0 : (totalProtein / totalMacro) * 100;
+			double fatRatio = (totalMacro == 0) ? 0 : (totalFat / totalMacro) * 100;
+
+			result.add(WeeklyNutritionDto.builder()
+					.startDate(startDate.format(DateTimeFormatter.ofPattern("MM-dd")))
+					.endDate(endDate.format(DateTimeFormatter.ofPattern("MM-dd")))
+					.carb(Math.round(carbRatio * 100.0) / 100.0)
+					.protein(Math.round(proteinRatio * 100.0) / 100.0)
+					.fat(Math.round(fatRatio * 100.0) / 100.0)
+					.kcal(Math.round(totalKcal * 100.0) / 100.0)
+					.build());
+
+		}
+
+		return WeeklyNutritionResponse.builder().nutritions(result).build();
+	}
+
 }
