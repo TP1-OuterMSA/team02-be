@@ -23,6 +23,6 @@ public class DietRequest {
 	@NotNull(message = "식사 타입을 입력해주세요")
 	private MealType mealType;
 
-	@NotEmpty(message = "최소 1개 이상의 음식 코드가 필요합니다.")
+	@NotEmpty(message = "최소 1개 이상의 음식 이름이 필요합니다.")
 	private List<FoodRequest> foods;
 }
