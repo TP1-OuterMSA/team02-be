@@ -3,17 +3,22 @@ package com.example.community_cr.diet.service;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
-import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import org.springframework.stereotype.Service;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import com.example.community_cr.diet.entity.Diet;
 import com.example.community_cr.diet.entity.DietFood;
 import com.example.community_cr.diet.entity.Food;
@@ -145,7 +150,7 @@ public class DietServiceImpl implements DietService {
 			LocalDate endDate = date.minusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
 			LocalDate startDate = endDate.minusDays(6);
 
-			List<Diet> weeklyDiets = dietRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+			List<Diet> weeklyDiets = dietRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate);
 
 			double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
 
@@ -168,13 +173,13 @@ public class DietServiceImpl implements DietService {
 			double fatRatio = (totalMacro == 0) ? 0 : (totalFat / totalMacro) * 100;
 
 			result.add(WeeklyNutritionDto.builder()
-					.startDate(startDate.format(DateTimeFormatter.ofPattern("MM-dd")))
-					.endDate(endDate.format(DateTimeFormatter.ofPattern("MM-dd")))
-					.carb(Math.round(carbRatio * 100.0) / 100.0)
-					.protein(Math.round(proteinRatio * 100.0) / 100.0)
-					.fat(Math.round(fatRatio * 100.0) / 100.0)
-					.kcal(Math.round(totalKcal * 100.0) / 100.0)
-					.build());
+				.startDate(startDate.format(DateTimeFormatter.ofPattern("MM-dd")))
+				.endDate(endDate.format(DateTimeFormatter.ofPattern("MM-dd")))
+				.carb(Math.round(carbRatio * 100.0) / 100.0)
+				.protein(Math.round(proteinRatio * 100.0) / 100.0)
+				.fat(Math.round(fatRatio * 100.0) / 100.0)
+				.kcal(Math.round(totalKcal * 100.0) / 100.0)
+				.build());
 
 		}
 
