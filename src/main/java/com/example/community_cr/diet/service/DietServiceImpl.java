@@ -14,9 +14,17 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.example.community_cr.common.config.AiApiConfig;
+import com.example.community_cr.common.service.AiApiService;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
+import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
+import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
+import com.example.community_cr.diet.controller.dto.response.api.EvaluateInfo;
+import com.example.community_cr.diet.controller.dto.response.api.NutritionInfo;
 import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
 import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import com.example.community_cr.diet.entity.Diet;
@@ -27,6 +35,9 @@ import com.example.community_cr.diet.repository.DietRepository;
 import com.example.community_cr.diet.repository.FoodRepository;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +46,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class DietServiceImpl implements DietService {
+	private final AiApiConfig aiApiConfig;
+	private final AiApiService aiApiService;
+
 	private final DietRepository dietRepository;
 	private final DietFoodRepository dietFoodRepository;
 	private final FoodRepository foodRepository;
@@ -59,30 +73,31 @@ public class DietServiceImpl implements DietService {
 	}
 
 	private void addDietFoodFromDietRequest(Diet diet, DietRequest dto) {
-		// 이미 diet에 포함된 foodCode들을 추출
+		// 이미 diet에 포함된 foodName들을 추출
 		Set<String> existingDietFoodCodes = diet.getFoods().stream()
-			.map(dietFood -> dietFood.getFood().getFoodCode())
+			.map(DietFood::getFood)
+			.map(Food::getFoodName)
 			.collect(Collectors.toSet());
 
-		// 새롭게 추가할 foodCode만 필터링
-		List<String> foodCodes = dto.getFoods().stream()
-			.map(FoodRequest::getFoodCode)
+		// 새롭게 추가할 foodName 필터링
+		List<String> foodNames = dto.getFoods().stream()
+			.map(FoodRequest::getFoodName)
 			.filter(foodCode -> !existingDietFoodCodes.contains(foodCode))
 			.toList();
 
-		if (foodCodes.isEmpty()) {
+		if (foodNames.isEmpty()) {
 			throw new IllegalArgumentException("새롭게 추가할 음식이 존재하지 않습니다.");
 		}
 
-		List<Food> foods = foodRepository.findAllByFoodCodeIn(foodCodes);
+		List<Food> foods = foodRepository.findAllByFoodNameIn(foodNames);
 
 		// 존재하지 않는 음식 코드 검증
-		if (foods.size() != foodCodes.size()) {
+		if (foods.size() != foodNames.size()) {
 			Set<String> existingFoodCodes = foods.stream()
-				.map(Food::getFoodCode)
+				.map(Food::getFoodName)
 				.collect(Collectors.toSet());
 
-			List<String> notFoundFoodCodes = foodCodes.stream()
+			List<String> notFoundFoodCodes = foodNames.stream()
 				.filter(foodCode -> !existingFoodCodes.contains(foodCode))
 				.toList();
 
@@ -90,12 +105,12 @@ public class DietServiceImpl implements DietService {
 		}
 
 		Map<String, FoodRequest> foodRequestMap = dto.getFoods().stream()
-			.collect(Collectors.toMap(FoodRequest::getFoodCode, Function.identity()));
+			.collect(Collectors.toMap(FoodRequest::getFoodName, Function.identity()));
 
 		// DietFood 생성
 		List<DietFood> dietFoodsToAdd = foods.stream()
 			.map(food -> {
-				FoodRequest foodRequest = foodRequestMap.get(food.getFoodCode());
+				FoodRequest foodRequest = foodRequestMap.get(food.getFoodName());
 				if (foodRequest != null) {
 					return DietFood.from(
 						foodRequest.getIntakeWeight(),
@@ -141,6 +156,146 @@ public class DietServiceImpl implements DietService {
 		LocalDate endDate = yearMonth.atEndOfMonth(); // 2025-04-30
 
 		return dietRepository.findDietDatesBetween(startDate, endDate);
+	}
+
+	@Override
+	public void deleteDiet(long userId, long dietId) {
+		Diet diet = dietRepository.findById(dietId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단입니다."));
+
+		if (diet.getUser().getId() != userId) {
+			throw new IllegalArgumentException("자신의 식단만 삭제할 수 있습니다.");
+		}
+
+		dietFoodRepository.deleteAll(diet.getFoods());
+
+		dietRepository.delete(diet);
+	}
+
+	@Override
+	public void deleteDietFood(long userId, long dietFoodId) {
+		DietFood dietFood = dietFoodRepository.findById(dietFoodId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식단 음식입니다."));
+
+		Diet diet = dietFood.getDiet();
+
+		if (diet.getUser().getId() != userId) {
+			throw new IllegalArgumentException("자신의 식단 음식만 삭제할 수 있습니다.");
+		}
+
+		dietFoodRepository.delete(dietFood);
+
+		if (!dietFoodRepository.existsByDietId(diet.getId())) {
+			dietRepository.delete(diet);
+		}
+	}
+
+	@Override
+	public Optional<DayNutritionAnalysisResponse> dayAnalyzeNutrition(long userId, LocalDate startDate,
+		LocalDate endDate) {
+		List<Diet> dietList = dietRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate);
+
+		if (dietList.isEmpty()) {
+			return Optional.of(DayNutritionAnalysisResponse.empty());
+		}
+		Map<LocalDate, List<Diet>> groupedByDate = dietList.stream()
+			.collect(Collectors.groupingBy(Diet::getDate));
+
+		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
+
+		List<NutritionAnalysisResponse> nutritionAnalysisResponses = new ArrayList<>();
+		for (LocalDate date : groupedByDate.keySet()) {
+			double dayTotalKcal = 0;
+			double dayCarb = 0;
+			double dayProtein = 0;
+			double dayFat = 0;
+			for (Diet diet : groupedByDate.get(date)) {
+				for (DietFood dietFood : diet.getFoods()) {
+					Food food = dietFood.getFood();
+					double ratio = dietFood.getIntakeWeight() / food.getFoodWeight();
+					dayTotalKcal += dietFood.getIntakeKcal();
+					dayCarb += food.getCarb() * ratio;
+					dayProtein += food.getProtein() * ratio;
+					dayFat += food.getFat() * ratio;
+				}
+			}
+			totalKcal += dayTotalKcal;
+			carb += dayCarb;
+			protein += dayProtein;
+			fat += dayFat;
+			double carbRatio = (dayCarb * 4) / dayTotalKcal * 100;
+			double proteinRatio = (dayProtein * 4) / dayTotalKcal * 100;
+			double fatRatio = (dayFat * 9) / dayTotalKcal * 100;
+			nutritionAnalysisResponses.add(NutritionAnalysisResponse.builder()
+				.date(date)
+				.totalKcal(dayTotalKcal)
+				.carb(carbRatio)
+				.protein(proteinRatio)
+				.fat(fatRatio)
+				.build());
+		}
+		double weekCarbRatio = (carb * 0.004) / totalKcal * 100;
+		double weekProteinRatio = (protein * 0.004) / totalKcal * 100;
+		double weekFatRatio = (fat * 0.009) / totalKcal * 100;
+
+		String userMessage = String.format("%f-%f-%f-%f", totalKcal, weekCarbRatio, weekProteinRatio, weekFatRatio);
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiConfig.getNutritionEvaluateSystemMessage(),
+			userMessage);
+		String cleanedJson = aiApiService.getCleanedJsonFromAiApiRequest(apiRequest,
+			aiApiConfig.getNutritionEvaluateKey());
+
+		ObjectMapper mapper = new ObjectMapper();
+		EvaluateInfo evaluateInfo;
+		try {
+			evaluateInfo = mapper.readValue(cleanedJson, new TypeReference<>() {
+			});
+		} catch (JsonProcessingException e) {
+			throw new IllegalStateException("일일 식단 분석에 실패했습니다. 다시 시도해주세요.");
+		}
+
+		List<Food> foods = evaluateInfo.getRecommendFoods().stream()
+			.map(NutritionInfo::toEntity)
+			.toList();
+		foodRepository.saveAll(foods);
+
+		String evaluate = evaluateInfo.getEvaluate();
+		List<FoodResponse> foodResponses = foods.stream()
+			.map(FoodResponse::from)
+			.toList();
+		return Optional.of(DayNutritionAnalysisResponse.from(nutritionAnalysisResponses, evaluate, foodResponses));
+	}
+
+	@Override
+	public Optional<NutritionAnalysisResponse> analyzeNutrition(long userId, LocalDate date) {
+		List<Diet> dietList = dietRepository.findAllByDateAndUserId(date, userId);
+
+		if (dietList.isEmpty()) {
+			return Optional.of(NutritionAnalysisResponse.from(date));
+		}
+
+		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
+
+		for (Diet diet : dietList) {
+			for (DietFood dietFood : diet.getFoods()) {
+				Food food = dietFood.getFood();
+				double ratio = dietFood.getIntakeWeight() / food.getFoodWeight();
+
+				totalKcal += dietFood.getIntakeKcal();
+				carb += food.getCarb() * ratio;
+				protein += food.getProtein() * ratio;
+				fat += food.getFat() * ratio;
+			}
+		}
+
+		NutritionAnalysisResponse nutritionAnalysisResponse = NutritionAnalysisResponse.builder()
+			.date(date)
+			.totalKcal(totalKcal)
+			.carb(carb)
+			.protein(protein)
+			.fat(fat)
+			.build();
+
+		return Optional.of(nutritionAnalysisResponse);
 	}
 
 	public WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count) {

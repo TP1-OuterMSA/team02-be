@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,8 +20,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
+import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
+import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
 
@@ -66,16 +70,11 @@ public class DietController {
 
 	@GetMapping("/getFoods")
 	public ResponseEntity<List<FoodResponse>> getFoods(
-		@RequestParam("pageNo") final int pageNo,
-		@RequestParam("pageSize") final int pageSize,
-		@RequestParam(name = "foodName", required = false) Optional<String> foodName
+		@RequestParam(value = "count", required = false, defaultValue = "3") final int count,
+		@RequestParam(name = "foodName") String foodName
 	) {
-		List<FoodResponse> foodResponses;
-		if (foodName.isPresent()) {
-			foodResponses = foodService.getFoods(pageNo, pageSize, foodName.get());
-		} else {
-			foodResponses = foodService.getFoods(pageNo, pageSize);
-		}
+		List<FoodResponse> foodResponses = foodService.getFoods(count, foodName);
+
 		return ResponseEntity.ok(foodResponses);
 	}
 
@@ -100,4 +99,51 @@ public class DietController {
 	}
 
 
+	@GetMapping("/getSchoolMeal")
+	public ResponseEntity<List<FoodResponse>> getSchoolMeal(
+		@RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+		@RequestParam(name = "mealType") MealType mealType
+	) {
+		List<FoodResponse> foods = foodService.getSchoolMeal(date, mealType);
+		return ResponseEntity.ok(foods);
+	}
+
+	@DeleteMapping("/deleteDiet")
+	public ResponseEntity<Void> deleteDiet(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("dietId") long dietId
+	) {
+		dietService.deleteDiet(userId, dietId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@DeleteMapping("/deleteDietFood")
+	public ResponseEntity<Void> deleteDietFood(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("dietFoodId") long dietFoodId
+	) {
+		dietService.deleteDietFood(userId, dietFoodId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/analyze")
+	public ResponseEntity<NutritionAnalysisResponse> analyzeNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+	) {
+		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
+	}
+
+	@GetMapping("/analyzeDay")
+	public ResponseEntity<DayNutritionAnalysisResponse> analyzeDayNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+		@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+	) {
+		Optional<DayNutritionAnalysisResponse> response = dietService.dayAnalyzeNutrition(userId, startDate, endDate);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
+	}
 }

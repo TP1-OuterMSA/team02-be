@@ -1,10 +1,12 @@
-package com.example.community_cr.diet.entity;
+package com.example.community_cr.school_meal.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,22 +14,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
 @Getter
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Food {
+public class MealMenu {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(unique = true, nullable = false, updatable = false)
-	private String foodName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "meal_id", nullable = false)
+	private Meal meal;
 
-	//칼로리,탄단지 이외 추가 요소 필요
-	private double foodWeight;
-	private double kcal;
-	private double protein;
-	private double fat;
-	private double carb;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "menu_id", nullable = false)
+	private Menu menu;
 }

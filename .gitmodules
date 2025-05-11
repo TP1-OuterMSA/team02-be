@@ -1,0 +1,3 @@
+[submodule "src/main/avro-schemas"]
+	path = src/main/avro-schemas
+	url = https://github.com/0711kc/avro.git
