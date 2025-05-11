@@ -9,6 +9,7 @@ import com.example.community_cr.diet.controller.dto.request.DietRequest;
 import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 
 public interface DietService {
 	Optional<DietResponse> saveDiet(long userId, DietRequest dto);
@@ -26,4 +27,6 @@ public interface DietService {
 	void deleteDietFood(long userId, long dietFoodId);
 
 	Optional<DayNutritionAnalysisResponse> dayAnalyzeNutrition(long userId, LocalDate startDate, LocalDate endDate);
+
+	WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count);
 }

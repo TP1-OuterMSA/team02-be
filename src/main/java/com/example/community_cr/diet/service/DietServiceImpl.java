@@ -22,6 +22,8 @@ import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysi
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import com.example.community_cr.diet.controller.dto.response.api.EvaluateInfo;
 import com.example.community_cr.diet.controller.dto.response.api.NutritionInfo;
 import com.example.community_cr.diet.entity.Diet;
@@ -294,4 +296,46 @@ public class DietServiceImpl implements DietService {
 
 		return Optional.of(nutritionAnalysisResponse);
 	}
+
+	public WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count) {
+		List<WeeklyNutritionDto> result = new ArrayList<>();
+
+		for (int i = 0; i < count; i++) {
+			LocalDate endDate = date.minusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
+			LocalDate startDate = endDate.minusDays(6);
+
+			List<Diet> weeklyDiets = dietRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate);
+
+			double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
+
+			for (Diet diet : weeklyDiets) {
+				for (DietFood df : diet.getFoods()) {
+					Food food = df.getFood();
+					double ratio = df.getIntakeWeight() / food.getFoodWeight(); // 섭취 비율
+
+					totalCarb += food.getCarb() * ratio;
+					totalProtein += food.getProtein() * ratio;
+					totalFat += food.getFat() * ratio;
+					totalKcal += food.getKcal() * ratio;
+				}
+			}
+
+			double carbRatio = (totalKcal == 0) ? 0 : (totalCarb * 4 / totalKcal) * 100;
+			double proteinRatio = (totalKcal == 0) ? 0 : (totalProtein * 4 / totalKcal) * 100;
+			double fatRatio = (totalKcal == 0) ? 0 : (totalFat * 9 / totalKcal) * 100;
+
+			result.add(WeeklyNutritionDto.builder()
+				.startDate(startDate.toString())
+				.endDate(endDate.toString())
+				.carb(carbRatio)
+				.protein(proteinRatio)
+				.fat(fatRatio)
+				.kcal(totalKcal)
+				.build());
+
+		}
+
+		return WeeklyNutritionResponse.builder().nutritions(result).build();
+	}
+
 }
