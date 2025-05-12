@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,7 @@ public class DietServiceImpl implements DietService {
 
 	private void addDietFoodFromDietRequest(Diet diet, DietRequest dto) {
 		// 이미 diet에 포함된 foodName들을 추출
-		Set<String> existingDietFoodCodes = diet.getFoods().stream()
+		Set<String> existingDietFoodNames = diet.getFoods().stream()
 			.map(DietFood::getFood)
 			.map(Food::getFoodName)
 			.collect(Collectors.toSet());
@@ -81,7 +82,7 @@ public class DietServiceImpl implements DietService {
 		// 새롭게 추가할 foodName 필터링
 		List<String> foodNames = dto.getFoods().stream()
 			.map(FoodRequest::getFoodName)
-			.filter(foodCode -> !existingDietFoodCodes.contains(foodCode))
+			.filter(foodName -> !existingDietFoodNames.contains(foodName))
 			.toList();
 
 		if (foodNames.isEmpty()) {
@@ -92,15 +93,15 @@ public class DietServiceImpl implements DietService {
 
 		// 존재하지 않는 음식 코드 검증
 		if (foods.size() != foodNames.size()) {
-			Set<String> existingFoodCodes = foods.stream()
+			Set<String> existingFoodNames = foods.stream()
 				.map(Food::getFoodName)
 				.collect(Collectors.toSet());
 
-			List<String> notFoundFoodCodes = foodNames.stream()
-				.filter(foodCode -> !existingFoodCodes.contains(foodCode))
+			List<String> notFoundFoodNames = foodNames.stream()
+				.filter(foodName -> !existingFoodNames.contains(foodName))
 				.toList();
 
-			throw new IllegalArgumentException("존재하지 않는 음식 코드 : " + String.join(", ", notFoundFoodCodes));
+			throw new IllegalArgumentException("존재하지 않는 음식 코드 : " + String.join(", ", notFoundFoodNames));
 		}
 
 		Map<String, FoodRequest> foodRequestMap = dto.getFoods().stream()
@@ -198,7 +199,7 @@ public class DietServiceImpl implements DietService {
 			return Optional.of(DayNutritionAnalysisResponse.empty());
 		}
 		Map<LocalDate, List<Diet>> groupedByDate = dietList.stream()
-			.collect(Collectors.groupingBy(Diet::getDate));
+			.collect(Collectors.groupingBy(Diet::getDate, TreeMap::new, Collectors.toList()));
 
 		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
 
@@ -238,19 +239,11 @@ public class DietServiceImpl implements DietService {
 		double weekFatRatio = (fat * 0.009) / totalKcal * 100;
 
 		String userMessage = String.format("%f-%f-%f-%f", totalKcal, weekCarbRatio, weekProteinRatio, weekFatRatio);
-		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiConfig.getNutritionEvaluateSystemMessage(),
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(),
+			aiApiConfig.getDayNutritionEvaluateSystemMessage(),
 			userMessage);
-		String cleanedJson = aiApiService.getCleanedJsonFromAiApiRequest(apiRequest,
-			aiApiConfig.getNutritionEvaluateKey());
 
-		ObjectMapper mapper = new ObjectMapper();
-		EvaluateInfo evaluateInfo;
-		try {
-			evaluateInfo = mapper.readValue(cleanedJson, new TypeReference<>() {
-			});
-		} catch (JsonProcessingException e) {
-			throw new IllegalStateException("일일 식단 분석에 실패했습니다. 다시 시도해주세요.");
-		}
+		EvaluateInfo evaluateInfo = getEvaluateByAiApiRequest(apiRequest, aiApiConfig.getNutritionEvaluateKey());
 
 		List<Food> foods = evaluateInfo.getRecommendFoods().stream()
 			.map(NutritionInfo::toEntity)
@@ -300,42 +293,86 @@ public class DietServiceImpl implements DietService {
 	public WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count) {
 		List<WeeklyNutritionDto> result = new ArrayList<>();
 
+		double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
 		for (int i = 0; i < count; i++) {
-			LocalDate endDate = date.minusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
-			LocalDate startDate = endDate.minusDays(6);
+			LocalDate startDate = date.plusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
+			LocalDate endDate = startDate.plusDays(6);
 
 			List<Diet> weeklyDiets = dietRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate);
 
-			double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
+			double weekCarb = 0, weekProtein = 0, weekFat = 0, weekKcal = 0;
 
 			for (Diet diet : weeklyDiets) {
 				for (DietFood df : diet.getFoods()) {
 					Food food = df.getFood();
 					double ratio = df.getIntakeWeight() / food.getFoodWeight(); // 섭취 비율
 
-					totalCarb += food.getCarb() * ratio;
-					totalProtein += food.getProtein() * ratio;
-					totalFat += food.getFat() * ratio;
-					totalKcal += food.getKcal() * ratio;
+					weekCarb += food.getCarb() * ratio;
+					weekProtein += food.getProtein() * ratio;
+					weekFat += food.getFat() * ratio;
+					weekKcal += food.getKcal() * ratio;
 				}
 			}
+			totalCarb += weekCarb;
+			totalProtein += weekProtein;
+			totalFat += weekFat;
+			totalKcal += weekKcal;
 
-			double carbRatio = (totalKcal == 0) ? 0 : (totalCarb * 4 / totalKcal) * 100;
-			double proteinRatio = (totalKcal == 0) ? 0 : (totalProtein * 4 / totalKcal) * 100;
-			double fatRatio = (totalKcal == 0) ? 0 : (totalFat * 9 / totalKcal) * 100;
+			double carbRatio = (weekKcal == 0) ? 0 : (weekCarb * 4 / weekKcal) * 100;
+			double proteinRatio = (weekKcal == 0) ? 0 : (weekProtein * 4 / weekKcal) * 100;
+			double fatRatio = (weekKcal == 0) ? 0 : (weekFat * 9 / weekKcal) * 100;
 
 			result.add(WeeklyNutritionDto.builder()
-				.startDate(startDate.toString())
-				.endDate(endDate.toString())
+				.startDate(startDate)
+				.endDate(endDate)
 				.carb(carbRatio)
 				.protein(proteinRatio)
 				.fat(fatRatio)
-				.kcal(totalKcal)
+				.kcal(weekKcal)
 				.build());
 
 		}
 
-		return WeeklyNutritionResponse.builder().nutritions(result).build();
+		double totalCarbRatio = (totalKcal == 0) ? 0 : (totalCarb * 4 / totalKcal) * 100;
+		double totalProteinRatio = (totalKcal == 0) ? 0 : (totalProtein * 4 / totalKcal) * 100;
+		double totalFatRatio = (totalKcal == 0) ? 0 : (totalFat * 9 / totalKcal) * 100;
+
+		String userMessage = String.format("%f-%f-%f-%f", totalKcal, totalCarbRatio, totalProteinRatio, totalFatRatio);
+		String systemMessage = String.format(aiApiConfig.getWeekNutritionEvaluateSystemMessage(), count);
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), systemMessage, userMessage);
+
+		EvaluateInfo evaluateInfo = getEvaluateByAiApiRequest(apiRequest, aiApiConfig.getNutritionEvaluateKey());
+
+		List<Food> foods = evaluateInfo.getRecommendFoods().stream()
+			.map(NutritionInfo::toEntity)
+			.toList();
+		foodRepository.saveAll(foods);
+
+		String evaluate = evaluateInfo.getEvaluate();
+		List<FoodResponse> foodResponses = foods.stream()
+			.map(FoodResponse::from)
+			.toList();
+
+		return WeeklyNutritionResponse.builder()
+			.nutritions(result)
+			.evaluate(evaluate)
+			.recommendFoods(foodResponses)
+			.build();
+	}
+
+	private EvaluateInfo getEvaluateByAiApiRequest(ApiRequest apiRequest, String apiKey) {
+		String cleanedJson = aiApiService.getCleanedJsonFromAiApiRequest(apiRequest, apiKey);
+
+		ObjectMapper mapper = new ObjectMapper();
+		EvaluateInfo evaluateInfo;
+		try {
+			evaluateInfo = mapper.readValue(cleanedJson, new TypeReference<>() {
+			});
+		} catch (JsonProcessingException e) {
+			throw new IllegalStateException("일일 식단 분석에 실패했습니다. 다시 시도해주세요.");
+		}
+
+		return evaluateInfo;
 	}
 
 }

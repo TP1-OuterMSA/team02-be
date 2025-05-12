@@ -19,7 +19,8 @@ public class AiApiConfig {
 	private String nutritionSystemMessage;
 	private String schoolMealNutritionSystemMessage;
 	private String foodSystemMessageFormat;
-	private String nutritionEvaluateSystemMessage;
+	private String dayNutritionEvaluateSystemMessage;
+	private String weekNutritionEvaluateSystemMessage;
 
 	private String model;
 	private String url;

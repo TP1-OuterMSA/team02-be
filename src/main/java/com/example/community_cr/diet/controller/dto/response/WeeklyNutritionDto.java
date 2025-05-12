@@ -1,5 +1,9 @@
 package com.example.community_cr.diet.controller.dto.response;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,14 +12,18 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class WeeklyNutritionDto {
-    private String startDate; // 예: "04-28"
-    private String endDate;   // 예: "05-04"
 
-    // 단위: 비율 (%)
-    private double carb;
-    private double protein;
-    private double fat;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate startDate;
 
-    // 총 섭취 칼로리 (단위: kcal)
-    private double kcal;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate endDate;
+
+	// 단위: 비율 (%)
+	private double carb;
+	private double protein;
+	private double fat;
+
+	// 총 섭취 칼로리 (단위: kcal)
+	private double kcal;
 }

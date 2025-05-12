@@ -10,5 +10,8 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class WeeklyNutritionResponse {
-    private List<WeeklyNutritionDto> nutritions;
+	private List<WeeklyNutritionDto> nutritions;
+
+	private String evaluate;
+	private List<FoodResponse> recommendFoods;
 }
