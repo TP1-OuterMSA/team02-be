@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
@@ -87,6 +89,15 @@ public class DietController {
 			.map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)) // yyyy-MM-dd
 			.collect(Collectors.toList()));
 	}
+	@GetMapping("/weekly-nutrition")
+	public ResponseEntity<WeeklyNutritionResponse> getWeeklyNutrition(
+			@RequestHeader("user-id") long userId,
+			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			@RequestParam(name = "count", required = false, defaultValue = "7") int count
+	) {
+		return ResponseEntity.ok(dietService.getWeeklyNutrition(userId, date, count));
+	}
+
 
 	@GetMapping("/getSchoolMeal")
 	public ResponseEntity<List<FoodResponse>> getSchoolMeal(
@@ -121,6 +132,17 @@ public class DietController {
 		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 	) {
 		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
+	}
+
+	@GetMapping("/analyzeDay")
+	public ResponseEntity<DayNutritionAnalysisResponse> analyzeDayNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+		@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+	) {
+		Optional<DayNutritionAnalysisResponse> response = dietService.dayAnalyzeNutrition(userId, startDate, endDate);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
 	}

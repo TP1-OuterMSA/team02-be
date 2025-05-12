@@ -22,8 +22,6 @@ public class NutritionAnalysisResponse {
 	private double carb;
 	private double protein;
 	private double fat;
-	private double vitamin;
-	private double calcium;
 
 	public static NutritionAnalysisResponse from(LocalDate date) {
 		return NutritionAnalysisResponse.builder()
@@ -32,8 +30,6 @@ public class NutritionAnalysisResponse {
 			.carb(0)
 			.protein(0)
 			.fat(0)
-			.vitamin(0)
-			.calcium(0)
 			.build();
 	}
 }
