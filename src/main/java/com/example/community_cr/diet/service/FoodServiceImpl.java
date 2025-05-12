@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.community_cr.common.config.AiApiConfig;
 import com.example.community_cr.common.service.AiApiService;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
+import com.example.community_cr.common.exception.ApiErrorException;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
@@ -102,26 +103,31 @@ public class FoodServiceImpl implements FoodService {
 	}
 
 	@Override
-	public void saveNutrition(List<FoodRequest> foodRequests) {
-		if (foodRequests.isEmpty()) {
+	public void saveDietNutrition(List<String> foodNames) {
+		List<String> notFoundFoodNames = getNotExistsMenuName(foodNames);
+
+		getFoodNutritionByAiApi(notFoundFoodNames, aiApiConfig.getNutritionSystemMessage(),
+			aiApiConfig.getAnalyzeNutritionKey());
+	}
+
+	@Override
+	public List<Food> saveSchoolMealNutrition(List<String> foodNames) {
+		List<String> notFoundFoodNames = getNotExistsMenuName(foodNames);
+
+		return getFoodNutritionByAiApi(notFoundFoodNames, aiApiConfig.getSchoolMealNutritionSystemMessage(),
+			aiApiConfig.getSchoolMealKey());
+	}
+
+	private List<String> getNotExistsMenuName(List<String> foodNames) {
+		if (foodNames.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
 
-		List<String> foodNames = foodRequests.stream()
-			.map(FoodRequest::getFoodName)
-			.toList();
 		List<String> existingFoodNames = foodRepository.findExistingFoodNames(foodNames);
-		List<String> notFoundFoodRequests = foodRequests.stream()
-			.filter(foodRequest -> !existingFoodNames.contains(foodRequest.getFoodName()))
+		return foodNames.stream()
+			.filter(foodName -> !existingFoodNames.contains(foodName))
 			.map(Object::toString)
 			.toList();
-
-		if (notFoundFoodRequests.isEmpty()) {
-			return;
-		}
-
-		getFoodNutritionByAiApi(notFoundFoodRequests, aiApiConfig.getNutritionSystemMessage(),
-			aiApiConfig.getAnalyzeNutritionKey());
 	}
 
 	private List<Food> getFoodNutritionByAiApi(List<String> foodInfos, String systemMessage, String apiKey) {
