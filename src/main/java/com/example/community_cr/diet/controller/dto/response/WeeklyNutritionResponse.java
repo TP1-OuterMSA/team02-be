@@ -12,6 +12,9 @@ import lombok.Getter;
 public class WeeklyNutritionResponse {
 	private List<WeeklyNutritionDto> nutritions;
 
-	private String evaluate;
-	private List<FoodResponse> recommendFoods;
+	public static WeeklyNutritionResponse from(List<WeeklyNutritionDto> weeklyNutritionDtos) {
+		return WeeklyNutritionResponse.builder()
+			.nutritions(weeklyNutritionDtos)
+			.build();
+	}
 }

@@ -17,10 +17,12 @@ import org.springframework.stereotype.Service;
 import com.example.community_cr.common.config.AiApiConfig;
 import com.example.community_cr.common.service.AiApiService;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.request.EvaluateNutritionRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
 import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.EvaluateNutritionResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
@@ -41,7 +43,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -195,21 +199,23 @@ public class DietServiceImpl implements DietService {
 		LocalDate endDate) {
 		List<Diet> dietList = dietRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate);
 
-		if (dietList.isEmpty()) {
-			return Optional.of(DayNutritionAnalysisResponse.empty());
-		}
 		Map<LocalDate, List<Diet>> groupedByDate = dietList.stream()
 			.collect(Collectors.groupingBy(Diet::getDate, TreeMap::new, Collectors.toList()));
 
-		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
-
 		List<NutritionAnalysisResponse> nutritionAnalysisResponses = new ArrayList<>();
-		for (LocalDate date : groupedByDate.keySet()) {
+
+		for (LocalDate tempDate = startDate; !tempDate.isEqual(endDate.plusDays(1));
+			 tempDate = tempDate.plusDays(1)) {
+			List<Diet> dateDietList = groupedByDate.get(tempDate);
+			if (dateDietList == null) {
+				nutritionAnalysisResponses.add(NutritionAnalysisResponse.empty(tempDate));
+				continue;
+			}
 			double dayTotalKcal = 0;
 			double dayCarb = 0;
 			double dayProtein = 0;
 			double dayFat = 0;
-			for (Diet diet : groupedByDate.get(date)) {
+			for (Diet diet : dateDietList) {
 				for (DietFood dietFood : diet.getFoods()) {
 					Food food = dietFood.getFood();
 					double ratio = dietFood.getIntakeWeight() / food.getFoodWeight();
@@ -219,42 +225,19 @@ public class DietServiceImpl implements DietService {
 					dayFat += food.getFat() * ratio;
 				}
 			}
-			totalKcal += dayTotalKcal;
-			carb += dayCarb;
-			protein += dayProtein;
-			fat += dayFat;
 			double carbRatio = (dayCarb * 4) / dayTotalKcal * 100;
 			double proteinRatio = (dayProtein * 4) / dayTotalKcal * 100;
 			double fatRatio = (dayFat * 9) / dayTotalKcal * 100;
 			nutritionAnalysisResponses.add(NutritionAnalysisResponse.builder()
-				.date(date)
+				.date(tempDate)
 				.totalKcal(dayTotalKcal)
 				.carb(carbRatio)
 				.protein(proteinRatio)
 				.fat(fatRatio)
 				.build());
 		}
-		double weekCarbRatio = (carb * 0.004) / totalKcal * 100;
-		double weekProteinRatio = (protein * 0.004) / totalKcal * 100;
-		double weekFatRatio = (fat * 0.009) / totalKcal * 100;
 
-		String userMessage = String.format("%f-%f-%f-%f", totalKcal, weekCarbRatio, weekProteinRatio, weekFatRatio);
-		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(),
-			aiApiConfig.getDayNutritionEvaluateSystemMessage(),
-			userMessage);
-
-		EvaluateInfo evaluateInfo = getEvaluateByAiApiRequest(apiRequest, aiApiConfig.getNutritionEvaluateKey());
-
-		List<Food> foods = evaluateInfo.getRecommendFoods().stream()
-			.map(NutritionInfo::toEntity)
-			.toList();
-		foodRepository.saveAll(foods);
-
-		String evaluate = evaluateInfo.getEvaluate();
-		List<FoodResponse> foodResponses = foods.stream()
-			.map(FoodResponse::from)
-			.toList();
-		return Optional.of(DayNutritionAnalysisResponse.from(nutritionAnalysisResponses, evaluate, foodResponses));
+		return Optional.of(DayNutritionAnalysisResponse.from(nutritionAnalysisResponses));
 	}
 
 	@Override
@@ -262,7 +245,7 @@ public class DietServiceImpl implements DietService {
 		List<Diet> dietList = dietRepository.findAllByDateAndUserId(date, userId);
 
 		if (dietList.isEmpty()) {
-			return Optional.of(NutritionAnalysisResponse.from(date));
+			return Optional.of(NutritionAnalysisResponse.empty(date));
 		}
 
 		double totalKcal = 0, carb = 0, protein = 0, fat = 0;
@@ -293,7 +276,6 @@ public class DietServiceImpl implements DietService {
 	public WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count) {
 		List<WeeklyNutritionDto> result = new ArrayList<>();
 
-		double totalCarb = 0, totalProtein = 0, totalFat = 0, totalKcal = 0;
 		for (int i = 0; i < count; i++) {
 			LocalDate startDate = date.plusWeeks(i).with(java.time.DayOfWeek.SUNDAY);
 			LocalDate endDate = startDate.plusDays(6);
@@ -313,11 +295,6 @@ public class DietServiceImpl implements DietService {
 					weekKcal += food.getKcal() * ratio;
 				}
 			}
-			totalCarb += weekCarb;
-			totalProtein += weekProtein;
-			totalFat += weekFat;
-			totalKcal += weekKcal;
-
 			double carbRatio = (weekKcal == 0) ? 0 : (weekCarb * 4 / weekKcal) * 100;
 			double proteinRatio = (weekKcal == 0) ? 0 : (weekProtein * 4 / weekKcal) * 100;
 			double fatRatio = (weekKcal == 0) ? 0 : (weekFat * 9 / weekKcal) * 100;
@@ -330,15 +307,20 @@ public class DietServiceImpl implements DietService {
 				.fat(fatRatio)
 				.kcal(weekKcal)
 				.build());
-
 		}
 
-		double totalCarbRatio = (totalKcal == 0) ? 0 : (totalCarb * 4 / totalKcal) * 100;
-		double totalProteinRatio = (totalKcal == 0) ? 0 : (totalProtein * 4 / totalKcal) * 100;
-		double totalFatRatio = (totalKcal == 0) ? 0 : (totalFat * 9 / totalKcal) * 100;
+		return WeeklyNutritionResponse.from(result);
+	}
 
-		String userMessage = String.format("%f-%f-%f-%f", totalKcal, totalCarbRatio, totalProteinRatio, totalFatRatio);
-		String systemMessage = String.format(aiApiConfig.getWeekNutritionEvaluateSystemMessage(), count);
+	@Override
+	public EvaluateNutritionResponse getDayNutritionEvaluate(EvaluateNutritionRequest evaluateNutritionRequest) {
+		List<String> dayNutritionList = evaluateNutritionRequest.getEvaluateNutritionList().stream()
+			.map(Object::toString)
+			.toList();
+
+		String userMessage = String.join(", ", dayNutritionList);
+		String systemMessage = String.format(aiApiConfig.getDayNutritionEvaluateSystemMessage(),
+			dayNutritionList.size());
 		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), systemMessage, userMessage);
 
 		EvaluateInfo evaluateInfo = getEvaluateByAiApiRequest(apiRequest, aiApiConfig.getNutritionEvaluateKey());
@@ -352,12 +334,33 @@ public class DietServiceImpl implements DietService {
 		List<FoodResponse> foodResponses = foods.stream()
 			.map(FoodResponse::from)
 			.toList();
+		return EvaluateNutritionResponse.of(evaluate, foodResponses);
+	}
 
-		return WeeklyNutritionResponse.builder()
-			.nutritions(result)
-			.evaluate(evaluate)
-			.recommendFoods(foodResponses)
-			.build();
+	@Override
+	public EvaluateNutritionResponse getWeekNutritionEvaluate(
+		EvaluateNutritionRequest evaluateNutritionRequest) {
+		List<String> weekNutritionList = evaluateNutritionRequest.getEvaluateNutritionList().stream()
+			.map(Object::toString)
+			.toList();
+
+		String userMessage = String.join(", ", weekNutritionList);
+		String systemMessage = String.format(aiApiConfig.getWeekNutritionEvaluateSystemMessage(),
+			weekNutritionList.size());
+		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), systemMessage, userMessage);
+
+		EvaluateInfo evaluateInfo = getEvaluateByAiApiRequest(apiRequest, aiApiConfig.getNutritionEvaluateKey());
+
+		List<Food> foods = evaluateInfo.getRecommendFoods().stream()
+			.map(NutritionInfo::toEntity)
+			.toList();
+		foodRepository.saveAll(foods);
+
+		String evaluate = evaluateInfo.getEvaluate();
+		List<FoodResponse> foodResponses = foods.stream()
+			.map(FoodResponse::from)
+			.toList();
+		return EvaluateNutritionResponse.of(evaluate, foodResponses);
 	}
 
 	private EvaluateInfo getEvaluateByAiApiRequest(ApiRequest apiRequest, String apiKey) {

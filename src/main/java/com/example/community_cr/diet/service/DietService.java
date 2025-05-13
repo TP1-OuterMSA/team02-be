@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.request.EvaluateNutritionRequest;
 import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.EvaluateNutritionResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 
@@ -29,4 +31,8 @@ public interface DietService {
 	Optional<DayNutritionAnalysisResponse> dayAnalyzeNutrition(long userId, LocalDate startDate, LocalDate endDate);
 
 	WeeklyNutritionResponse getWeeklyNutrition(long userId, LocalDate date, int count);
+
+	EvaluateNutritionResponse getDayNutritionEvaluate(EvaluateNutritionRequest evaluateNutritionRequest);
+
+	EvaluateNutritionResponse getWeekNutritionEvaluate(EvaluateNutritionRequest evaluateNutritionRequest);
 }

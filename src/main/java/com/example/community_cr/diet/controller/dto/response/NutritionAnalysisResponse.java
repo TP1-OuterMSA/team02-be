@@ -23,7 +23,7 @@ public class NutritionAnalysisResponse {
 	private double protein;
 	private double fat;
 
-	public static NutritionAnalysisResponse from(LocalDate date) {
+	public static NutritionAnalysisResponse empty(LocalDate date) {
 		return NutritionAnalysisResponse.builder()
 			.date(date)
 			.totalKcal(0)
