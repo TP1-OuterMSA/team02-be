@@ -40,7 +40,6 @@ public class FoodServiceImpl implements FoodService {
 
 	@Override
 	public List<FoodResponse> getFoods(int count, String foodName) {
-		log.info("OK");
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
