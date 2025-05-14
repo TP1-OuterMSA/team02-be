@@ -40,25 +40,27 @@ public class FoodServiceImpl implements FoodService {
 
 	@Override
 	public List<FoodResponse> getFoods(int count, String foodName) {
+		log.info("OK");
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
-		foodName = foodName.replace(" ", "");
+		foodName = foodName.replaceAll("\\s+", "");
 		String aiApiFoodSystemMessage = String.format(aiApiConfig.getFoodSystemMessageFormat(), count);
 
 		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiFoodSystemMessage, foodName);
 		String cleanedJson = aiApiService.getCleanedJsonFromAiApiRequest(apiRequest, aiApiConfig.getSearchFoodKey());
 
-		log.info(cleanedJson);
 		ObjectMapper mapper = new ObjectMapper();
 		List<FoodInfo> foodInfos;
 		try {
 			foodInfos = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
+			log.info("Json Processing Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 		if (foodInfos.isEmpty()) {
+			log.info("Food Info Empty Exception. cleanedJson = {}", cleanedJson);
 			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 
@@ -123,14 +125,13 @@ public class FoodServiceImpl implements FoodService {
 		}
 
 		foodNames = foodNames.stream()
-			.map(foodName -> foodName.replace(" ", ""))
+			.map(foodName -> foodName.replaceAll("\\s+", ""))
 			.toList();
 
 		List<String> existingFoodNames = foodRepository.findExistingFoodNames(foodNames);
 		return foodNames.stream()
 			.filter(foodName -> !existingFoodNames.contains(foodName))
 			.map(Object::toString)
-			.map(foodName -> foodName.replace(" ", ""))
 			.toList();
 	}
 
@@ -145,9 +146,11 @@ public class FoodServiceImpl implements FoodService {
 			nutritionInfos = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
+			log.info("Json Processing Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalArgumentException("영양 성분을 분석하는데 실패했습니다. 다시 시도해주세요.");
 		}
 		if (nutritionInfos.isEmpty()) {
+			log.info("Nutrition Info Empty Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalArgumentException("영양 성분을 분석하는데 실패했습니다. 다시 시도해주세요.");
 		}
 
