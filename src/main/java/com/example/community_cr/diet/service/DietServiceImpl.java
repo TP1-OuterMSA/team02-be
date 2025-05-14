@@ -372,6 +372,7 @@ public class DietServiceImpl implements DietService {
 			evaluateInfo = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
+			log.info("Json 파싱 에러 : {}", cleanedJson);
 			throw new IllegalStateException("일일 식단 분석에 실패했습니다. 다시 시도해주세요.");
 		}
 

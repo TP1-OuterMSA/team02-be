@@ -39,9 +39,8 @@ public class AiApiService {
 		try {
 			aiApiResponse = mapper.readValue(aiApiResponseContent, AiResponse.class);
 		} catch (JsonProcessingException e) {
-			log.info("start : {}", aiApiResponseContent);
+			log.info("Ai Api Response Parsing Error : {}", aiApiResponseContent);
 			processApiResponseError(aiApiResponseContent);
-			log.info("end");
 			throw new ApiErrorException(null,
 				"API 응답 처리 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.\n message: " + aiApiResponseContent);
 		}
@@ -74,6 +73,7 @@ public class AiApiService {
 		try {
 			apiErrorResponse = mapper.readValue(aiApiResponseContent, ApiErrorResponse.class);
 		} catch (JsonProcessingException e) {
+			log.info("Ai Api Response Parsing Error In Processing Error : {}", aiApiResponseContent);
 			throw new ApiErrorException(null,
 				"API 응답 처리 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.\n message: " + aiApiResponseContent);
 		}
