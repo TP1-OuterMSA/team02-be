@@ -20,9 +20,10 @@ public class SchoolMealController {
 
 	@GetMapping("/test")
 	public ResponseEntity<Void> test(
-		@RequestParam("date") LocalDate date
+		@RequestParam("startDate") LocalDate startDate,
+		@RequestParam("endDate") LocalDate endDate
 	) {
-		nutritionProducer.sendMealItem(date);
+		nutritionProducer.sendMealItem(startDate, endDate);
 		return ResponseEntity.ok().build();
 	}
 }
