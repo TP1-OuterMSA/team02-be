@@ -24,7 +24,7 @@ public class NutritionInfo {
 		return Food.builder()
 			.foodWeight(weight)
 			.carb(carb)
-			.foodName(name)
+			.foodName(name.replace(" ", ""))
 			.protein(protein)
 			.fat(fat)
 			.kcal(kcal)

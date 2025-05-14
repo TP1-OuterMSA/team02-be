@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.community_cr.common.config.AiApiConfig;
 import com.example.community_cr.common.service.AiApiService;
-import com.example.community_cr.diet.controller.dto.request.FoodRequest;
-import com.example.community_cr.common.exception.ApiErrorException;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
@@ -45,6 +43,7 @@ public class FoodServiceImpl implements FoodService {
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
+		foodName = foodName.replace(" ", "");
 		String aiApiFoodSystemMessage = String.format(aiApiConfig.getFoodSystemMessageFormat(), count);
 
 		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiFoodSystemMessage, foodName);
@@ -123,10 +122,15 @@ public class FoodServiceImpl implements FoodService {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
 
+		foodNames = foodNames.stream()
+			.map(foodName -> foodName.replace(" ", ""))
+			.toList();
+
 		List<String> existingFoodNames = foodRepository.findExistingFoodNames(foodNames);
 		return foodNames.stream()
 			.filter(foodName -> !existingFoodNames.contains(foodName))
 			.map(Object::toString)
+			.map(foodName -> foodName.replace(" ", ""))
 			.toList();
 	}
 

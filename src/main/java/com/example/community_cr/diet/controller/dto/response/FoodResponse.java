@@ -15,7 +15,7 @@ public class FoodResponse {
 
 	public static FoodResponse from(FoodInfo foodInfo) {
 		return FoodResponse.builder()
-			.foodName(foodInfo.getName())
+			.foodName(foodInfo.getName().replace(" ", ""))
 			.foodWeight(foodInfo.getWeight())
 			.kcal(foodInfo.getKcal())
 			.build();
