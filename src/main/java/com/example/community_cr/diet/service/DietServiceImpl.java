@@ -204,8 +204,7 @@ public class DietServiceImpl implements DietService {
 
 		List<NutritionAnalysisResponse> nutritionAnalysisResponses = new ArrayList<>();
 
-		for (LocalDate tempDate = startDate; !tempDate.isEqual(endDate.plusDays(1));
-			 tempDate = tempDate.plusDays(1)) {
+		for (LocalDate tempDate = startDate; tempDate.isBefore(endDate.plusDays(1)); tempDate = tempDate.plusDays(1)) {
 			List<Diet> dateDietList = groupedByDate.get(tempDate);
 			if (dateDietList == null) {
 				nutritionAnalysisResponses.add(NutritionAnalysisResponse.empty(tempDate));

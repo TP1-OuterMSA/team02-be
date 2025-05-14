@@ -31,9 +31,10 @@ public class NutritionProducer {
 
 	public void sendMealItem(LocalDate startDate, LocalDate endDate) {
 		List<String> dates = new ArrayList<>();
-		for (LocalDate date = startDate; !date.isEqual(endDate.plusDays(1)); date = date.plusDays(1)) {
+		for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
 			dates.add(date.toString());
 		}
+
 		List<Meal> meals = mealRepository.findAllByDayInfoIn(dates);
 		Set<Menu> menus = new HashSet<>();
 		for (Meal meal : meals) {
@@ -45,6 +46,7 @@ public class NutritionProducer {
 		List<String> foodNames = menus.stream()
 			.map(Menu::getName)
 			.toList();
+
 		List<Food> foods = foodRepository.findAllByFoodNameIn(foodNames);
 		sendAllMealItems(foods);
 	}
