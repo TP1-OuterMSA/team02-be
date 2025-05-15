@@ -1,4 +1,4 @@
-package com.example.community_cr.mate.matching.controller.dto.request;
+package com.example.community_cr.mealMatch.match.controller.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

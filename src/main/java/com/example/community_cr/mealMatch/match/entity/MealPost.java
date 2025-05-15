@@ -1,8 +1,8 @@
-package com.example.community_cr.mate.matching.entity;
+package com.example.community_cr.mealMatch.match.entity;
 
 import java.time.LocalDateTime;
 
-import com.example.community_cr.mate.matching.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -29,12 +29,11 @@ public class MealPost {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Builder.Default
-	@Column(updatable = false)
-	private LocalDateTime createdAt = LocalDateTime.now();
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 
-	@Builder.Default
-	private LocalDateTime updatedAt = LocalDateTime.now();
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
 
 	@Column(nullable = false)
 	private String title;

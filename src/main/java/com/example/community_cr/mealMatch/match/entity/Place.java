@@ -1,4 +1,4 @@
-package com.example.community_cr.mate.matching.entity;
+package com.example.community_cr.mealMatch.match.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
