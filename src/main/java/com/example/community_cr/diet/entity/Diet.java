@@ -7,6 +7,7 @@ import java.util.List;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,6 +38,7 @@ public class Diet {
 	private LocalDate date;
 
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private MealType type;
 
 	@Builder.Default

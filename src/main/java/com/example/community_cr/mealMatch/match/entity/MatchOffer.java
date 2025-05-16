@@ -1,12 +1,13 @@
-package com.example.community_cr.mate.matching.entity;
+package com.example.community_cr.mealMatch.match.entity;
 
 import java.time.LocalDateTime;
 
-import com.example.community_cr.mate.matching.controller.dto.request.MealPostRequest;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,40 +25,31 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MealPost {
+public class MatchOffer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Builder.Default
-	@Column(updatable = false)
-	private LocalDateTime createdAt = LocalDateTime.now();
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private MatchState matchState;
 
-	@Builder.Default
-	private LocalDateTime updatedAt = LocalDateTime.now();
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 
 	@Column(nullable = false)
-	private String title;
-
-	@Column(nullable = false)
-	private String content;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "place_id")
-	private Place place;
+	private LocalDateTime updatedAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 
-	public static MealPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
-		return MealPost.builder()
-			.createdAt(createdAt)
-			.updatedAt(createdAt)
-			.title(mealPostRequest.getTitle())
-			.content(mealPostRequest.getContent())
-			.place(place)
-			.user(user)
-			.build();
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "meal_post_id")
+	private MealPost mealPost;
+
+	public void updateMatchState(MatchState matchState, LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+		this.matchState = matchState;
 	}
 }

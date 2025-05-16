@@ -1,9 +1,9 @@
-package com.example.community_cr.mate.matching.controller.dto.response;
+package com.example.community_cr.mealMatch.match.controller.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.example.community_cr.mate.matching.entity.MealPost;
-import com.example.community_cr.mate.matching.entity.Place;
+import com.example.community_cr.mealMatch.match.entity.MealPost;
+import com.example.community_cr.mealMatch.match.entity.Place;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
@@ -20,7 +20,9 @@ public class MealPostResponse {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
-	private String title;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime schedule;
+
 	private String content;
 	private PlaceResponse place;
 	private long userId;
@@ -30,7 +32,7 @@ public class MealPostResponse {
 			.id(mealPost.getId())
 			.createdAt(mealPost.getCreatedAt())
 			.updatedAt(mealPost.getUpdatedAt())
-			.title(mealPost.getTitle())
+			.schedule(mealPost.getSchedule())
 			.content(mealPost.getContent())
 			.place(PlaceResponse.from(mealPost.getPlace()))
 			.userId(mealPost.getUser().getId())
@@ -41,6 +43,7 @@ public class MealPostResponse {
 	@Builder
 	private static class PlaceResponse {
 		private String name;
+		private Long id;
 		private double latitude;
 		private double longitude;
 		private String address;
@@ -48,6 +51,7 @@ public class MealPostResponse {
 		public static PlaceResponse from(Place place) {
 			return PlaceResponse.builder()
 				.name(place.getName())
+				.id(place.getId())
 				.latitude(place.getLatitude())
 				.longitude(place.getLongitude())
 				.address(place.getAddress())
