@@ -64,13 +64,11 @@ public class MatchController {
 		matchService.replyMealMateOffer(userId, matchOfferId, matchState);
 		return ResponseEntity.ok().build();
 	}
-	// [1] 전체 글 목록 조회
 	@GetMapping
 	public List<MealPostResponse> getAllPosts() {
 		return matchService.getAllPosts();
 	}
 
-	// [2] 글 수정
 	@PutMapping("/{postId}")
 	public ResponseEntity<?> updatePost(
 			@PathVariable Long postId,
@@ -80,7 +78,6 @@ public class MatchController {
 		return ResponseEntity.ok().build();
 	}
 
-	// [3] 글 삭제
 	@DeleteMapping("/{postId}")
 	public ResponseEntity<?> deletePost(
 			@PathVariable Long postId,

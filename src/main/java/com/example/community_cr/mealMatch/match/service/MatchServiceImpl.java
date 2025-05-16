@@ -150,10 +150,10 @@ public class MatchServiceImpl implements MatchService {
 	@Override
 	public void updatePost(Long postId, Long userId, MealPostRequest request) {
 		MealPost post = mealPostRepository.findById(postId)
-				.orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+				.orElseThrow(() -> new RuntimeException("존재하지 않는 식사 매칭 글 정보입니다. "));
 
 		if (!post.getUserId().equals(userId)) {
-			throw new RuntimeException("수정 권한이 없습니다.");
+			throw new RuntimeException("자신이 작성한 매칭 글만 신청 정보만 수정할 수 있습니다. ");
 		}
 
 		post.update(request);
@@ -163,7 +163,7 @@ public class MatchServiceImpl implements MatchService {
 	@Override
 	public void deletePost(Long postId, Long userId) {
 		MealPost post = mealPostRepository.findById(postId)
-				.orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+				.orElseThrow(() -> new RuntimeException("존재하지 않는 식사 매칭 글 정보입니다."));
 		if (!post.getUserId().equals(userId)) {
 			throw new RuntimeException("삭제 권한이 없습니다.");
 		}
