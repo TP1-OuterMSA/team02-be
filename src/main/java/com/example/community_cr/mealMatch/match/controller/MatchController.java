@@ -42,10 +42,10 @@ public class MatchController {
 	public ResponseEntity<Void> offerMealMate(
 		@RequestHeader("user-id") long userId,
 		@PathVariable long mealPostId,
-		@RequestParam("startDateTime") LocalDateTime startDateTime,
-		@RequestParam("endDateTime") LocalDateTime endDateTime
+		@RequestParam("startSchedule") LocalDateTime startSchedule,
+		@RequestParam("endSchedule") LocalDateTime endSchedule
 	) {
-		matchService.offerMealMate(userId, mealPostId, startDateTime, endDateTime);
+		matchService.offerMealMate(userId, mealPostId, startSchedule, endSchedule);
 		return ResponseEntity.ok().build();
 	}
 

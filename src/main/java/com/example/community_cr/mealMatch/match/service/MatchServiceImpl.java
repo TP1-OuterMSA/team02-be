@@ -50,7 +50,7 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public void offerMealMate(long userId, long mealPostId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+	public void offerMealMate(long userId, long mealPostId, LocalDateTime startSchedule, LocalDateTime endSchedule) {
 		if (matchOfferRepository.existsByUserIdAndMealPostId(userId, mealPostId)) {
 			throw new IllegalArgumentException("이미 신청한 식사 매칭 글입니다.");
 		}
@@ -69,6 +69,8 @@ public class MatchServiceImpl implements MatchService {
 			.createdAt(LocalDateTime.now())
 			.updatedAt(LocalDateTime.now())
 			.user(user)
+			.startSchedule(startSchedule)
+			.endSchedule(endSchedule)
 			.mealPost(mealPost)
 			.build();
 		matchOfferRepository.save(matchOffer);

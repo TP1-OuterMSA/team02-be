@@ -11,7 +11,7 @@ import com.example.community_cr.mealMatch.match.controller.dto.response.MealPost
 public interface MatchService {
 	MealPostResponse saveMealPost(long userId, MealPostRequest mealPostRequest);
 
-	void offerMealMate(long userId, long mealPostId, LocalDateTime startDateTime, LocalDateTime endDateTime);
+	void offerMealMate(long userId, long mealPostId, LocalDateTime startSchedule, LocalDateTime endSchedule);
 
 	void replyMealMateOffer(long userId, long matchOfferId, boolean matchState);
 

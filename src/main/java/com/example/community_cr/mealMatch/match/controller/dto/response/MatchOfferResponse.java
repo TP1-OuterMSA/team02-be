@@ -22,6 +22,12 @@ public class MatchOfferResponse {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime startSchedule;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime endSchedule;
+
 	private long senderId;
 
 	private MealPostResponse mealPost;
@@ -33,6 +39,8 @@ public class MatchOfferResponse {
 			.createdAt(matchOffer.getCreatedAt())
 			.updatedAt(matchOffer.getUpdatedAt())
 			.senderId(matchOffer.getUser().getId())
+			.startSchedule(matchOffer.getStartSchedule())
+			.endSchedule(matchOffer.getEndSchedule())
 			.mealPost(mealPostResponse)
 			.build();
 	}

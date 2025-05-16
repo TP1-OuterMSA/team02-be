@@ -40,6 +40,12 @@ public class MatchOffer {
 	@Column(nullable = false)
 	private LocalDateTime updatedAt;
 
+	@Column(nullable = false)
+	private LocalDateTime startSchedule;
+
+	@Column(nullable = false)
+	private LocalDateTime endSchedule;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
