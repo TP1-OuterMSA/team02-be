@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
 import com.example.community_cr.mealMatch.match.entity.MatchOffer;
@@ -141,31 +142,39 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public List<MealPostResponse> getAllPosts() {
-		return mealPostRepository.findAll().stream()
-				.map(MealPostResponse::from)
-				.collect(Collectors.toList());
+	public List<MealPostResponse> getAllPosts(long cursor, int count) {
+		PageRequest pageRequest = PageRequest.of(0, count);
+		Slice<MealPost> mealPosts;
+		if (cursor == 0) {
+			mealPosts = mealPostRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+		} else {
+			mealPosts = mealPostRepository.findNextPagePosts(cursor, pageRequest);
+		}
+		return mealPosts.stream()
+			.map(MealPostResponse::from)
+			.collect(Collectors.toList());
 	}
 
 	@Override
-	public void updatePost(Long postId, Long userId, MealPostRequest request) {
+	public MealPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request) {
 		MealPost post = mealPostRepository.findById(postId)
-				.orElseThrow(() -> new RuntimeException("존재하지 않는 식사 매칭 글 정보입니다. "));
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식사 매칭 글 정보입니다. "));
 
-		if (!post.getUserId().equals(userId)) {
-			throw new RuntimeException("자신이 작성한 매칭 글만 신청 정보만 수정할 수 있습니다. ");
+		if (!userId.equals(post.getUserId())) {
+			throw new IllegalArgumentException("자신이 작성한 매칭 글만 신청 정보만 수정할 수 있습니다. ");
 		}
 
 		post.update(request);
-		mealPostRepository.save(post);
+		post = mealPostRepository.save(post);
+		return MealPostResponse.from(post);
 	}
 
 	@Override
 	public void deletePost(Long postId, Long userId) {
 		MealPost post = mealPostRepository.findById(postId)
-				.orElseThrow(() -> new RuntimeException("존재하지 않는 식사 매칭 글 정보입니다."));
-		if (!post.getUserId().equals(userId)) {
-			throw new RuntimeException("삭제 권한이 없습니다.");
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식사 매칭 글 정보입니다."));
+		if (!userId.equals(post.getUserId())) {
+			throw new IllegalArgumentException("삭제 권한이 없습니다.");
 		}
 		mealPostRepository.delete(post);
 	}

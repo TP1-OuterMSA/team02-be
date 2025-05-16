@@ -1,11 +1,13 @@
 package com.example.community_cr.mealMatch.match.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
-import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.user.entity.User;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +40,7 @@ public class MealPost {
 	private LocalDateTime updatedAt;
 
 	@Column(nullable = false)
-	private String title;
+	private LocalDateTime schedule;
 
 	@Column(nullable = false)
 	private String content;
@@ -49,30 +52,28 @@ public class MealPost {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
-	private Object matchDate;
-	private Object mealTime;
-	private Long placeId;
 
-
-	public Long getUserId() {
-		return user != null ? user.getId() : null;
-	}
+	@OneToMany(mappedBy = "mealPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<MatchOffer> matchOfferList;
 
 	public static MealPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
 		return MealPost.builder()
 			.createdAt(createdAt)
 			.updatedAt(createdAt)
-			.title(mealPostRequest.getTitle())
+			.schedule(mealPostRequest.getSchedule())
 			.content(mealPostRequest.getContent())
 			.place(place)
 			.user(user)
 			.build();
 	}
 
-	public void update(MealPostRequest request) {
-		this.title = request.getTitle();
-		this.content = request.getContent();
-//		this.matchDate = request.getMatchDate();
-//		this.mealTime = request.getMealTime();
+	public Long getUserId() {
+		return user != null ? user.getId() : null;
+	}
+
+	public void update(UpdateMealPostRequest request) {
+		this.content = request.getContent() != null ? request.getContent() : this.content;
+		this.schedule = request.getSchedule() != null ? request.getSchedule() : this.schedule;
+		this.updatedAt = LocalDateTime.now();
 	}
 }

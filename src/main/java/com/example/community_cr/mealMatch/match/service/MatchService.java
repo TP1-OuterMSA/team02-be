@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
 
@@ -18,9 +19,9 @@ public interface MatchService {
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long mealPostId, long cursor, int count);
 
-	List<MealPostResponse> getAllPosts();
+	List<MealPostResponse> getAllPosts(long cursor, int count);
 
-	void updatePost(Long postId, Long userId, MealPostRequest request);
+	MealPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request);
 
 	void deletePost(Long postId, Long userId);
 }

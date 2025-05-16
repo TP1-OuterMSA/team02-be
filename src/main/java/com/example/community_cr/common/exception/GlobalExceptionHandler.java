@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	// Validation 에러
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<List<String>> handleMethodArgumentNotValidException(
 		MethodArgumentNotValidException exception) {
 		List<String> messages = exception.getBindingResult().getAllErrors().stream()
 			.map(ObjectError::getDefaultMessage)
 			.toList();
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(messages);
 	}
 
@@ -34,11 +34,11 @@ public class GlobalExceptionHandler {
 		DataIntegrityViolationException exception) {
 		if (exception.getCause() instanceof ConstraintViolationException violationException) {
 			String sqlMessage = violationException.getSQLException().getMessage();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(sqlMessage);
 		} else {
 			Throwable rootCause = ExceptionUtils.getRootCause(exception);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(rootCause.getMessage());
 		}
 	}

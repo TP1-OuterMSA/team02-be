@@ -20,7 +20,9 @@ public class MealPostResponse {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
-	private String title;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime schedule;
+
 	private String content;
 	private PlaceResponse place;
 	private long userId;
@@ -30,7 +32,7 @@ public class MealPostResponse {
 			.id(mealPost.getId())
 			.createdAt(mealPost.getCreatedAt())
 			.updatedAt(mealPost.getUpdatedAt())
-			.title(mealPost.getTitle())
+			.schedule(mealPost.getSchedule())
 			.content(mealPost.getContent())
 			.place(PlaceResponse.from(mealPost.getPlace()))
 			.userId(mealPost.getUser().getId())
