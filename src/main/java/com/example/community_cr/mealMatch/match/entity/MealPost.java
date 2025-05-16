@@ -3,6 +3,7 @@ package com.example.community_cr.mealMatch.match.entity;
 import java.time.LocalDateTime;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -48,6 +49,14 @@ public class MealPost {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
+	private Object matchDate;
+	private Object mealTime;
+	private Long placeId;
+
+
+	public Long getUserId() {
+		return user != null ? user.getId() : null;
+	}
 
 	public static MealPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
 		return MealPost.builder()
@@ -58,5 +67,12 @@ public class MealPost {
 			.place(place)
 			.user(user)
 			.build();
+	}
+
+	public void update(MealPostRequest request) {
+		this.title = request.getTitle();
+		this.content = request.getContent();
+//		this.matchDate = request.getMatchDate();
+//		this.mealTime = request.getMealTime();
 	}
 }

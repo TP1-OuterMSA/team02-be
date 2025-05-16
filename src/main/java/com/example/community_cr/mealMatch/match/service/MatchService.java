@@ -17,4 +17,10 @@ public interface MatchService {
 	List<MatchOfferResponse> getMatchOffer(long userId, long cursor, int count);
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long mealPostId, long cursor, int count);
+
+	List<MealPostResponse> getAllPosts();
+
+	void updatePost(Long postId, Long userId, MealPostRequest request);
+
+	void deletePost(Long postId, Long userId);
 }

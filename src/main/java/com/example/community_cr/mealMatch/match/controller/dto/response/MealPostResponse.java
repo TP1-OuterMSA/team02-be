@@ -41,6 +41,7 @@ public class MealPostResponse {
 	@Builder
 	private static class PlaceResponse {
 		private String name;
+		private Long id;
 		private double latitude;
 		private double longitude;
 		private String address;
@@ -48,6 +49,7 @@ public class MealPostResponse {
 		public static PlaceResponse from(Place place) {
 			return PlaceResponse.builder()
 				.name(place.getName())
+				.id(place.getId())
 				.latitude(place.getLatitude())
 				.longitude(place.getLongitude())
 				.address(place.getAddress())

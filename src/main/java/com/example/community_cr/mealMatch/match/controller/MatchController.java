@@ -5,14 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
@@ -70,5 +63,29 @@ public class MatchController {
 	) {
 		matchService.replyMealMateOffer(userId, matchOfferId, matchState);
 		return ResponseEntity.ok().build();
+	}
+	// [1] 전체 글 목록 조회
+	@GetMapping
+	public List<MealPostResponse> getAllPosts() {
+		return matchService.getAllPosts();
+	}
+
+	// [2] 글 수정
+	@PutMapping("/{postId}")
+	public ResponseEntity<?> updatePost(
+			@PathVariable Long postId,
+			@RequestBody MealPostRequest request,
+			@RequestHeader("user-id") Long userId) {
+		matchService.updatePost(postId, userId, request);
+		return ResponseEntity.ok().build();
+	}
+
+	// [3] 글 삭제
+	@DeleteMapping("/{postId}")
+	public ResponseEntity<?> deletePost(
+			@PathVariable Long postId,
+			@RequestHeader("user-id") Long userId) {
+		matchService.deletePost(postId, userId);
+		return ResponseEntity.noContent().build();
 	}
 }

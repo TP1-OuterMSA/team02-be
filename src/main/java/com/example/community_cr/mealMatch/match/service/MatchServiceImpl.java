@@ -2,6 +2,7 @@ package com.example.community_cr.mealMatch.match.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -137,5 +138,35 @@ public class MatchServiceImpl implements MatchService {
 			.name(mealPostRequest.getName())
 			.build();
 		return placeRepository.save(place);
+	}
+
+	@Override
+	public List<MealPostResponse> getAllPosts() {
+		return mealPostRepository.findAll().stream()
+				.map(MealPostResponse::from)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public void updatePost(Long postId, Long userId, MealPostRequest request) {
+		MealPost post = mealPostRepository.findById(postId)
+				.orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+		if (!post.getUserId().equals(userId)) {
+			throw new RuntimeException("수정 권한이 없습니다.");
+		}
+
+		post.update(request);
+		mealPostRepository.save(post);
+	}
+
+	@Override
+	public void deletePost(Long postId, Long userId) {
+		MealPost post = mealPostRepository.findById(postId)
+				.orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+		if (!post.getUserId().equals(userId)) {
+			throw new RuntimeException("삭제 권한이 없습니다.");
+		}
+		mealPostRepository.delete(post);
 	}
 }
