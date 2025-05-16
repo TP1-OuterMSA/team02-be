@@ -14,10 +14,13 @@ public class AiApiConfig {
 	private String searchFoodKey;
 	private String analyzeNutritionKey;
 	private String schoolMealKey;
+	private String nutritionEvaluateKey;
 
 	private String nutritionSystemMessage;
 	private String schoolMealNutritionSystemMessage;
 	private String foodSystemMessageFormat;
+	private String dayNutritionEvaluateSystemMessage;
+	private String weekNutritionEvaluateSystemMessage;
 
 	private String model;
 	private String url;

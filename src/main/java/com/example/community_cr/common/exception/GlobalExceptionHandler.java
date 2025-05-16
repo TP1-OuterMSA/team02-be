@@ -2,6 +2,9 @@ package com.example.community_cr.common.exception;
 
 import java.util.List;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	// Validation 에러
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<List<String>> handleMethodArgumentNotValidException(
@@ -21,6 +25,22 @@ public class GlobalExceptionHandler {
 			.toList();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 			.body(messages);
+	}
+
+	// DB 무결성 제약 위반
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<String> handleDataIntegrityViolationException(
+		DataIntegrityViolationException exception) {
+		if (exception.getCause() instanceof ConstraintViolationException violationException) {
+			String sqlMessage = violationException.getSQLException().getMessage();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(sqlMessage);
+		} else {
+			Throwable rootCause = ExceptionUtils.getRootCause(exception);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(rootCause.getMessage());
+		}
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

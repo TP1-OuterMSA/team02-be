@@ -23,4 +23,10 @@ public class Menu {
 
 	@Column(nullable = false, unique = true)
 	private String name;
+
+	public static Menu from(String name) {
+		return Menu.builder()
+			.name(name)
+			.build();
+	}
 }

@@ -19,9 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
+import com.example.community_cr.diet.controller.dto.request.EvaluateNutritionRequest;
+import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
+import com.example.community_cr.diet.controller.dto.response.EvaluateNutritionResponse;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
+import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
 import com.example.community_cr.diet.entity.MealType;
 import com.example.community_cr.diet.service.DietService;
 import com.example.community_cr.diet.service.FoodService;
@@ -41,7 +45,7 @@ public class DietController {
 		@RequestHeader("user-id") long userId,
 		@RequestBody @Valid DietRequest dto
 	) {
-		foodService.saveNutrition(dto.getFoods());
+		foodService.saveDietNutrition(dto.getFoodNames());
 		Optional<DietResponse> response = dietService.saveDiet(userId, dto);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
@@ -123,5 +127,39 @@ public class DietController {
 		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
 		return ResponseEntity.ok(
 			response.orElseThrow(IllegalArgumentException::new));
+	}
+
+	@GetMapping("/analyzeDay")
+	public ResponseEntity<DayNutritionAnalysisResponse> analyzeDayNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+		@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+	) {
+		Optional<DayNutritionAnalysisResponse> response = dietService.dayAnalyzeNutrition(userId, startDate, endDate);
+		return ResponseEntity.ok(
+			response.orElseThrow(IllegalArgumentException::new));
+	}
+
+	@GetMapping("/weekly-nutrition")
+	public ResponseEntity<WeeklyNutritionResponse> getWeeklyNutrition(
+		@RequestHeader("user-id") long userId,
+		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+		@RequestParam(name = "count", required = false, defaultValue = "7") int count
+	) {
+		return ResponseEntity.ok(dietService.getWeeklyNutrition(userId, date, count));
+	}
+
+	@GetMapping("/evaluate-day")
+	public ResponseEntity<EvaluateNutritionResponse> evaluateDayNutrition(
+		@RequestBody @Valid EvaluateNutritionRequest evaluateNutritionRequest
+	) {
+		return ResponseEntity.ok(dietService.getDayNutritionEvaluate(evaluateNutritionRequest));
+	}
+
+	@GetMapping("/evaluate-week")
+	public ResponseEntity<EvaluateNutritionResponse> evaluateWeekNutrition(
+		@RequestBody @Valid EvaluateNutritionRequest evaluateNutritionRequest
+	) {
+		return ResponseEntity.ok(dietService.getWeekNutritionEvaluate(evaluateNutritionRequest));
 	}
 }
