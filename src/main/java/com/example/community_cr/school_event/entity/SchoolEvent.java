@@ -1,5 +1,7 @@
 package com.example.community_cr.school_event.entity;
 
+import com.example.kafka_schemas.EventMenu;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-	name = "meal",
+	name = "school_event",
 	uniqueConstraints = {
 		@UniqueConstraint(columnNames = {"day_info", "title"})
 	}
@@ -34,4 +36,11 @@ public class SchoolEvent {
 
 	@Column(nullable = false)
 	private String title;
+
+	public static SchoolEvent from(EventMenu eventMenu) {
+		return SchoolEvent.builder()
+			.dayInfo(eventMenu.getDate())
+			.title(eventMenu.getEventTitle())
+			.build();
+	}
 }
