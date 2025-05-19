@@ -15,7 +15,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 		    SELECT m
 		    FROM MatchOffer m
 		    WHERE m.mealPost.user.id = :userId
-		    ORDER BY m.createdAt
+		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByUserIdOrderByCreatedAtDesc(@Param("userId") long userId, PageRequest pageRequest);
 
@@ -24,7 +24,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 		    FROM MatchOffer m
 		    WHERE m.mealPost.user.id = :userId
 		    AND m.id < :cursor
-		    ORDER BY m.createdAt
+		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByUserIdNextPagePosts(@Param("userId") long userId, @Param("cursor") long cursor,
 		PageRequest pageRequest);
@@ -33,7 +33,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 		    SELECT m
 		    FROM MatchOffer m
 		    WHERE m.mealPost.id = :mealPostId
-		    ORDER BY m.createdAt
+		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByMealPostIdOrderByCreatedAtDesc(@Param("mealPostId") long mealPostId,
 		PageRequest pageRequest);
@@ -43,7 +43,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 		    FROM MatchOffer m
 		    WHERE m.mealPost.id = :mealPostId
 		    AND m.id < :cursor
-		    ORDER BY m.createdAt
+		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByMealPostIdNextPagePosts(@Param("mealPostId") long mealPostId,
 		@Param("cursor") long cursor, PageRequest pageRequest);
