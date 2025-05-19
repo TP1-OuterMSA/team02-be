@@ -3,10 +3,12 @@ package com.example.community_cr.mealMatch.match.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.community_cr.mealMatch.match.controller.dto.request.AreaPointRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 
 public interface MatchService {
 	MealPostResponse saveMealPost(long userId, MealPostRequest mealPostRequest);
@@ -19,9 +21,11 @@ public interface MatchService {
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long mealPostId, long cursor, int count);
 
-	List<MealPostResponse> getAllPosts(long cursor, int count);
+	List<MealPostResponse> getAllPosts(String address, long cursor, int count);
 
 	MealPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request);
 
 	void deletePost(Long postId, Long userId);
+
+	List<PlaceResponse> getPlaces(AreaPointRequest areaPointRequest);
 }

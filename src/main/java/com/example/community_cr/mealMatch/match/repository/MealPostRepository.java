@@ -1,5 +1,7 @@
 package com.example.community_cr.mealMatch.match.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,15 +12,19 @@ import com.example.community_cr.mealMatch.match.entity.MealPost;
 
 public interface MealPostRepository extends JpaRepository<MealPost, Long> {
 	@Query("""
-			SELECT p FROM Post p
-			ORDER BY p.createdAt DESC
+			SELECT mp FROM MealPost mp
+			WHERE mp.place.id IN :placeIds
+			ORDER BY mp.createdAt DESC
 		""")
-	Slice<MealPost> findAllByOrderByCreatedAtDesc(PageRequest pageRequest);
+	Slice<MealPost> findAllByPlaceIdInOrderByCreatedAtDesc(@Param("placeIds") List<Long> placeIds,
+		PageRequest pageRequest);
 
 	@Query("""
-			SELECT p FROM Post p
-			WHERE p.id < :cursor
-			ORDER BY p.createdAt DESC
+			SELECT mp FROM MealPost mp
+			WHERE mp.id < :cursor
+			AND mp.place.id IN :placeIds
+			ORDER BY mp.createdAt DESC
 		""")
-	Slice<MealPost> findNextPagePosts(@Param("cursor") long cursor, PageRequest pageRequest);
+	Slice<MealPost> findNextPagePosts(@Param("placeIds") List<Long> placeIds,
+		@Param("cursor") long cursor, PageRequest pageRequest);
 }
