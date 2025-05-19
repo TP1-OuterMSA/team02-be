@@ -9,10 +9,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.community_cr.mealMatch.match.controller.dto.request.AreaPointRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 import com.example.community_cr.mealMatch.match.entity.MatchOffer;
 import com.example.community_cr.mealMatch.match.entity.MatchState;
 import com.example.community_cr.mealMatch.match.entity.MealPost;
@@ -144,13 +146,14 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public List<MealPostResponse> getAllPosts(long cursor, int count) {
+	public List<MealPostResponse> getAllPosts(String address, long cursor, int count) {
 		PageRequest pageRequest = PageRequest.of(0, count);
+		List<Long> placeIds = placeRepository.findAllPlaceIdByAddress(address);
 		Slice<MealPost> mealPosts;
 		if (cursor == 0) {
-			mealPosts = mealPostRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+			mealPosts = mealPostRepository.findAllByPlaceIdInOrderByCreatedAtDesc(placeIds, pageRequest);
 		} else {
-			mealPosts = mealPostRepository.findNextPagePosts(cursor, pageRequest);
+			mealPosts = mealPostRepository.findNextPagePosts(placeIds, cursor, pageRequest);
 		}
 		return mealPosts.stream()
 			.map(MealPostResponse::from)
@@ -179,5 +182,17 @@ public class MatchServiceImpl implements MatchService {
 			throw new IllegalArgumentException("삭제 권한이 없습니다.");
 		}
 		mealPostRepository.delete(post);
+	}
+
+	@Override
+	public List<PlaceResponse> getPlaces(AreaPointRequest areaPointRequest) {
+		double nwLongitude = areaPointRequest.getNwLongitude();
+		double nwLatitude = areaPointRequest.getNwLatitude();
+		double seLongitude = areaPointRequest.getSeLongitude();
+		double seLatitude = areaPointRequest.getSeLatitude();
+		List<Place> places = placeRepository.findAllByPointIn(nwLongitude, nwLatitude, seLongitude, seLatitude);
+		return places.stream()
+			.map(PlaceResponse::from)
+			.toList();
 	}
 }

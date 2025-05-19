@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.community_cr.mealMatch.match.controller.dto.request.AreaPointRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 import com.example.community_cr.mealMatch.match.service.MatchService;
 
 import jakarta.validation.Valid;
@@ -77,25 +79,35 @@ public class MatchController {
 
 	@GetMapping("/getPosts")
 	public List<MealPostResponse> getAllPosts(
+		@RequestParam(value = "address") String address,
 		@RequestParam(value = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(value = "count", required = false, defaultValue = "3") int count
 	) {
-		return matchService.getAllPosts(cursor, count);
+		return matchService.getAllPosts(address, cursor, count);
 	}
 
 	@PatchMapping("/updatePost/{postId}")
 	public ResponseEntity<MealPostResponse> updatePost(
 		@PathVariable long postId,
 		@RequestBody @Valid UpdateMealPostRequest request,
-		@RequestHeader("user-id") long userId) {
+		@RequestHeader("user-id") long userId
+	) {
 		return ResponseEntity.ok(matchService.updatePost(postId, userId, request));
 	}
 
 	@DeleteMapping("/deletePost/{postId}")
 	public ResponseEntity<Void> deletePost(
 		@PathVariable long postId,
-		@RequestHeader("user-id") long userId) {
+		@RequestHeader("user-id") long userId
+	) {
 		matchService.deletePost(postId, userId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/getPlaces")
+	public ResponseEntity<List<PlaceResponse>> getPlaces(
+		@RequestBody AreaPointRequest areaPointRequest
+	) {
+		return ResponseEntity.ok(matchService.getPlaces(areaPointRequest));
 	}
 }
