@@ -8,20 +8,20 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PlaceResponse {
-	private String name;
-	private Long id;
-	private double latitude;
-	private double longitude;
-	private String address;
+	private long id;
+	private String address_name;
+	private String place_name;
+	private double x;
+	private double y;
 	private long matchPostCount;
 
 	public static PlaceResponse from(Place place) {
 		return PlaceResponse.builder()
-			.name(place.getName())
+			.place_name(place.getName())
 			.id(place.getId())
-			.latitude(place.getLatitude())
-			.longitude(place.getLongitude())
-			.address(place.getAddress())
+			.y(place.getLatitude())
+			.x(place.getLongitude())
+			.address_name(place.getAddress())
 			.matchPostCount(place.getMatchPostList().size())
 			.build();
 	}
