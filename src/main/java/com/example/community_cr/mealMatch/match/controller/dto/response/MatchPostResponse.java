@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class MealPostResponse {
+public class MatchPostResponse {
 	private long id;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -26,8 +26,8 @@ public class MealPostResponse {
 	private PlaceResponse place;
 	private long userId;
 
-	public static MealPostResponse from(MatchPost matchPost) {
-		return MealPostResponse.builder()
+	public static MatchPostResponse from(MatchPost matchPost) {
+		return MatchPostResponse.builder()
 			.id(matchPost.getId())
 			.createdAt(matchPost.getCreatedAt())
 			.updatedAt(matchPost.getUpdatedAt())

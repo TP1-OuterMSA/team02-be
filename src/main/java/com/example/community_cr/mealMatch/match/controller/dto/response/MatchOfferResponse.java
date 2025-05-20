@@ -30,9 +30,9 @@ public class MatchOfferResponse {
 
 	private long senderId;
 
-	private MealPostResponse mealPost;
+	private MatchPostResponse mealPost;
 
-	public static MatchOfferResponse of(MatchOffer matchOffer, MealPostResponse mealPostResponse) {
+	public static MatchOfferResponse of(MatchOffer matchOffer, MatchPostResponse matchPostResponse) {
 		return MatchOfferResponse.builder()
 			.id(matchOffer.getId())
 			.matchState(matchOffer.getMatchState())
@@ -41,7 +41,7 @@ public class MatchOfferResponse {
 			.senderId(matchOffer.getUser().getId())
 			.startSchedule(matchOffer.getStartSchedule())
 			.endSchedule(matchOffer.getEndSchedule())
-			.mealPost(mealPostResponse)
+			.mealPost(matchPostResponse)
 			.build();
 	}
 }

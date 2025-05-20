@@ -3,7 +3,7 @@ package com.example.community_cr.mealMatch.match.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.user.entity.User;
 
@@ -56,12 +56,12 @@ public class MatchPost {
 	@OneToMany(mappedBy = "matchPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<MatchOffer> matchOfferList;
 
-	public static MatchPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
+	public static MatchPost of(MatchPostRequest matchPostRequest, Place place, User user, LocalDateTime createdAt) {
 		return com.example.community_cr.mealMatch.match.entity.MatchPost.builder()
 			.createdAt(createdAt)
 			.updatedAt(createdAt)
-			.schedule(mealPostRequest.getSchedule())
-			.content(mealPostRequest.getContent())
+			.schedule(matchPostRequest.getSchedule())
+			.content(matchPostRequest.getContent())
 			.place(place)
 			.user(user)
 			.build();

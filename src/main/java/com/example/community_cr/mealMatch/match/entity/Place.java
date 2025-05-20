@@ -9,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +18,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(
+	name = "place",
+	uniqueConstraints = {
+		@UniqueConstraint(columnNames = {"longitude", "latitude", "address"})
+	}
+)
 @Builder
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

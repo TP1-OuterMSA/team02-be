@@ -3,14 +3,14 @@ package com.example.community_cr.mealMatch.match.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
-import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.response.MatchPostResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 
 public interface MatchService {
-	MealPostResponse saveMealPost(long userId, MealPostRequest mealPostRequest);
+	MatchPostResponse saveMatchPost(long userId, MatchPostRequest matchPostRequest);
 
 	void offerMealMate(long userId, long mealPostId, LocalDateTime startSchedule, LocalDateTime endSchedule);
 
@@ -20,9 +20,9 @@ public interface MatchService {
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long mealPostId, long cursor, int count);
 
-	List<MealPostResponse> getAllPosts(String address, long cursor, int count);
+	List<MatchPostResponse> getAllPosts(String address, long cursor, int count);
 
-	MealPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request);
+	MatchPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request);
 
 	void deletePost(Long postId, Long userId);
 

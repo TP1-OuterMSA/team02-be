@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.community_cr.mealMatch.match.entity.MatchPost;
 
-public interface MealPostRepository extends JpaRepository<MatchPost, Long> {
+public interface MatchPostRepository extends JpaRepository<MatchPost, Long> {
 	@Query("""
 			SELECT mp FROM MatchPost mp
 			WHERE mp.place.id IN :placeIds

@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
-import com.example.community_cr.mealMatch.match.controller.dto.response.MealPostResponse;
+import com.example.community_cr.mealMatch.match.controller.dto.response.MatchPostResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 import com.example.community_cr.mealMatch.match.service.MatchService;
 
@@ -33,10 +33,10 @@ public class MatchController {
 	private final MatchService matchService;
 
 	@PostMapping("/save")
-	public ResponseEntity<MealPostResponse> saveMealPost(
+	public ResponseEntity<MatchPostResponse> saveMatchPost(
 		@RequestHeader("user-id") long userId,
-		@RequestBody @Valid MealPostRequest mealPostRequest) {
-		return ResponseEntity.ok(matchService.saveMealPost(userId, mealPostRequest));
+		@RequestBody @Valid MatchPostRequest matchPostRequest) {
+		return ResponseEntity.ok(matchService.saveMatchPost(userId, matchPostRequest));
 	}
 
 	@PostMapping("/offer/{mealPostId}")
@@ -77,7 +77,7 @@ public class MatchController {
 	}
 
 	@GetMapping("/getPosts")
-	public List<MealPostResponse> getAllPosts(
+	public List<MatchPostResponse> getAllPosts(
 		@RequestParam(value = "address") String address,
 		@RequestParam(value = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(value = "count", required = false, defaultValue = "3") int count
@@ -86,7 +86,7 @@ public class MatchController {
 	}
 
 	@PatchMapping("/updatePost/{postId}")
-	public ResponseEntity<MealPostResponse> updatePost(
+	public ResponseEntity<MatchPostResponse> updatePost(
 		@PathVariable long postId,
 		@RequestBody @Valid UpdateMealPostRequest request,
 		@RequestHeader("user-id") long userId
