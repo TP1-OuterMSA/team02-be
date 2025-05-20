@@ -2,7 +2,7 @@ package com.example.community_cr.mealMatch.match.controller.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.example.community_cr.mealMatch.match.entity.MealPost;
+import com.example.community_cr.mealMatch.match.entity.MatchPost;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
@@ -26,15 +26,15 @@ public class MealPostResponse {
 	private PlaceResponse place;
 	private long userId;
 
-	public static MealPostResponse from(MealPost mealPost) {
+	public static MealPostResponse from(MatchPost matchPost) {
 		return MealPostResponse.builder()
-			.id(mealPost.getId())
-			.createdAt(mealPost.getCreatedAt())
-			.updatedAt(mealPost.getUpdatedAt())
-			.schedule(mealPost.getSchedule())
-			.content(mealPost.getContent())
-			.place(PlaceResponse.from(mealPost.getPlace()))
-			.userId(mealPost.getUser().getId())
+			.id(matchPost.getId())
+			.createdAt(matchPost.getCreatedAt())
+			.updatedAt(matchPost.getUpdatedAt())
+			.schedule(matchPost.getSchedule())
+			.content(matchPost.getContent())
+			.place(PlaceResponse.from(matchPost.getPlace()))
+			.userId(matchPost.getUser().getId())
 			.build();
 	}
 }

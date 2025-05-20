@@ -51,8 +51,8 @@ public class MatchOffer {
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "meal_post_id")
-	private MealPost mealPost;
+	@JoinColumn(name = "match_post_id")
+	private MatchPost matchPost;
 
 	public void updateMatchState(MatchState matchState, LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;

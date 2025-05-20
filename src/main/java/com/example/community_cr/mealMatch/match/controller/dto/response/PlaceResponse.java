@@ -13,6 +13,7 @@ public class PlaceResponse {
 	private double latitude;
 	private double longitude;
 	private String address;
+	private long matchPostCount;
 
 	public static PlaceResponse from(Place place) {
 		return PlaceResponse.builder()
@@ -21,6 +22,7 @@ public class PlaceResponse {
 			.latitude(place.getLatitude())
 			.longitude(place.getLongitude())
 			.address(place.getAddress())
+			.matchPostCount(place.getMatchPostList().size())
 			.build();
 	}
 }

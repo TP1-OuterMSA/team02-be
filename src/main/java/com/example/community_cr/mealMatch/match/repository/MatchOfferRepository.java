@@ -9,12 +9,12 @@ import org.springframework.data.repository.query.Param;
 import com.example.community_cr.mealMatch.match.entity.MatchOffer;
 
 public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
-	boolean existsByUserIdAndMealPostId(long userId, long mealPostId);
+	boolean existsByUserIdAndMatchPostId(long userId, long mealPostId);
 
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.mealPost.user.id = :userId
+		    WHERE m.matchPost.user.id = :userId
 		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByUserIdOrderByCreatedAtDesc(@Param("userId") long userId, PageRequest pageRequest);
@@ -22,7 +22,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.mealPost.user.id = :userId
+		    WHERE m.matchPost.user.id = :userId
 		    AND m.id < :cursor
 		    ORDER BY m.createdAt DESC
 		""")
@@ -32,7 +32,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.mealPost.id = :mealPostId
+		    WHERE m.matchPost.id = :mealPostId
 		    ORDER BY m.createdAt DESC
 		""")
 	Slice<MatchOffer> findAllByMealPostIdOrderByCreatedAtDesc(@Param("mealPostId") long mealPostId,
@@ -41,7 +41,7 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.mealPost.id = :mealPostId
+		    WHERE m.matchPost.id = :mealPostId
 		    AND m.id < :cursor
 		    ORDER BY m.createdAt DESC
 		""")

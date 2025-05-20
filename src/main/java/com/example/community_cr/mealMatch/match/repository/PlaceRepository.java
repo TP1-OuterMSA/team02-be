@@ -14,11 +14,10 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 			SELECT p FROM Place p
 			WHERE (p.latitude = :lat AND p.longitude = :lng)
 			OR p.address = :address
-			OR p.name = :name
 		""")
-	Optional<Place> findByLongitudeAndLatitudeOrAddressOrName(@Param("lat") Double latitude,
+	Optional<Place> findByLongitudeAndLatitudeOrAddress(@Param("lat") Double latitude,
 		@Param("lng") Double longitude,
-		@Param("address") String address, @Param("name") String name);
+		@Param("address") String address);
 
 	@Query("""
 			SELECT p FROM Place p

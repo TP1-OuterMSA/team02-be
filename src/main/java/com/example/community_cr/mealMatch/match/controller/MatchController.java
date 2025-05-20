@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.community_cr.mealMatch.match.controller.dto.request.AreaPointRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
@@ -106,8 +105,11 @@ public class MatchController {
 
 	@GetMapping("/getPlaces")
 	public ResponseEntity<List<PlaceResponse>> getPlaces(
-		@RequestBody AreaPointRequest areaPointRequest
+		@RequestParam("nw-longitude") double nwLongitude,
+		@RequestParam("nw-latitude") double nwLatitude,
+		@RequestParam("se-longitude") double seLongitude,
+		@RequestParam("se-latitude") double seLatitude
 	) {
-		return ResponseEntity.ok(matchService.getPlaces(areaPointRequest));
+		return ResponseEntity.ok(matchService.getPlaces(nwLongitude, nwLatitude, seLongitude, seLatitude));
 	}
 }

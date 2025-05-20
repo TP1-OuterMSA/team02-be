@@ -3,7 +3,6 @@ package com.example.community_cr.mealMatch.match.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.community_cr.mealMatch.match.controller.dto.request.AreaPointRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.MealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
@@ -27,5 +26,5 @@ public interface MatchService {
 
 	void deletePost(Long postId, Long userId);
 
-	List<PlaceResponse> getPlaces(AreaPointRequest areaPointRequest);
+	List<PlaceResponse> getPlaces(double nwLongitude, double nwLatitude, double seLongitude, double seLatitude);
 }

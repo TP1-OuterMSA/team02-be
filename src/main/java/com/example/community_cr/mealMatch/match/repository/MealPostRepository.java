@@ -8,23 +8,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.community_cr.mealMatch.match.entity.MealPost;
+import com.example.community_cr.mealMatch.match.entity.MatchPost;
 
-public interface MealPostRepository extends JpaRepository<MealPost, Long> {
+public interface MealPostRepository extends JpaRepository<MatchPost, Long> {
 	@Query("""
-			SELECT mp FROM MealPost mp
+			SELECT mp FROM MatchPost mp
 			WHERE mp.place.id IN :placeIds
 			ORDER BY mp.createdAt DESC
 		""")
-	Slice<MealPost> findAllByPlaceIdInOrderByCreatedAtDesc(@Param("placeIds") List<Long> placeIds,
+	Slice<MatchPost> findAllByPlaceIdInOrderByCreatedAtDesc(@Param("placeIds") List<Long> placeIds,
 		PageRequest pageRequest);
 
 	@Query("""
-			SELECT mp FROM MealPost mp
+			SELECT mp FROM MatchPost mp
 			WHERE mp.id < :cursor
 			AND mp.place.id IN :placeIds
 			ORDER BY mp.createdAt DESC
 		""")
-	Slice<MealPost> findNextPagePosts(@Param("placeIds") List<Long> placeIds,
+	Slice<MatchPost> findNextPagePosts(@Param("placeIds") List<Long> placeIds,
 		@Param("cursor") long cursor, PageRequest pageRequest);
 }

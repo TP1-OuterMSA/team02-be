@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MealPost {
+public class MatchPost {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -53,11 +53,11 @@ public class MealPost {
 	@JoinColumn(name = "user_id")
 	private User user;
 
-	@OneToMany(mappedBy = "mealPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "matchPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<MatchOffer> matchOfferList;
 
-	public static MealPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
-		return MealPost.builder()
+	public static MatchPost of(MealPostRequest mealPostRequest, Place place, User user, LocalDateTime createdAt) {
+		return com.example.community_cr.mealMatch.match.entity.MatchPost.builder()
 			.createdAt(createdAt)
 			.updatedAt(createdAt)
 			.schedule(mealPostRequest.getSchedule())
