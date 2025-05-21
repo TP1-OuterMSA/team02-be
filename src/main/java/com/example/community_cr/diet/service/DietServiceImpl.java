@@ -2,33 +2,20 @@ package com.example.community_cr.diet.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.example.community_cr.common.config.AiApiConfig;
-import com.example.community_cr.common.service.AiApiService;
 import com.example.community_cr.diet.controller.dto.request.DietRequest;
-import com.example.community_cr.diet.controller.dto.request.EvaluateNutritionRequest;
 import com.example.community_cr.diet.controller.dto.request.FoodRequest;
-import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
-import com.example.community_cr.diet.controller.dto.response.DayNutritionAnalysisResponse;
 import com.example.community_cr.diet.controller.dto.response.DietResponse;
-import com.example.community_cr.diet.controller.dto.response.EvaluateNutritionResponse;
-import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.NutritionAnalysisResponse;
-import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionDto;
-import com.example.community_cr.diet.controller.dto.response.WeeklyNutritionResponse;
-import com.example.community_cr.diet.controller.dto.response.api.EvaluateInfo;
-import com.example.community_cr.diet.controller.dto.response.api.NutritionInfo;
 import com.example.community_cr.diet.entity.Diet;
 import com.example.community_cr.diet.entity.DietFood;
 import com.example.community_cr.diet.entity.Food;
