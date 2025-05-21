@@ -32,19 +32,19 @@ public interface MatchOfferRepository extends JpaRepository<MatchOffer, Long> {
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.matchPost.id = :mealPostId
+		    WHERE m.matchPost.id = :matchPostId
 		    ORDER BY m.createdAt DESC
 		""")
-	Slice<MatchOffer> findAllByMealPostIdOrderByCreatedAtDesc(@Param("mealPostId") long mealPostId,
+	Slice<MatchOffer> findAllByMatchPostIdOrderByCreatedAtDesc(@Param("matchPostId") long matchPostId,
 		PageRequest pageRequest);
 
 	@Query("""
 		    SELECT m
 		    FROM MatchOffer m
-		    WHERE m.matchPost.id = :mealPostId
+		    WHERE m.matchPost.id = :matchPostId
 		    AND m.id < :cursor
 		    ORDER BY m.createdAt DESC
 		""")
-	Slice<MatchOffer> findAllByMealPostIdNextPagePosts(@Param("mealPostId") long mealPostId,
+	Slice<MatchOffer> findAllByMatchPostIdNextPagePosts(@Param("matchPostId") long matchPostId,
 		@Param("cursor") long cursor, PageRequest pageRequest);
 }

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
-import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMatchPostRequest;
 import com.example.community_cr.user.entity.User;
 
 import jakarta.persistence.CascadeType;
@@ -71,7 +71,7 @@ public class MatchPost {
 		return user != null ? user.getId() : null;
 	}
 
-	public void update(UpdateMealPostRequest request) {
+	public void update(UpdateMatchPostRequest request) {
 		this.content = request.getContent() != null ? request.getContent() : this.content;
 		this.schedule = request.getSchedule() != null ? request.getSchedule() : this.schedule;
 		this.updatedAt = LocalDateTime.now();

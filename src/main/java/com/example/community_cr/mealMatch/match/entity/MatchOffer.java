@@ -1,9 +1,12 @@
 package com.example.community_cr.mealMatch.match.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.example.community_cr.user.entity.User;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -53,6 +57,10 @@ public class MatchOffer {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "match_post_id")
 	private MatchPost matchPost;
+
+	@Builder.Default
+	@OneToMany(mappedBy = "matchOffer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<MatchOfferNotification> notifications = new ArrayList<>();
 
 	public void updateMatchState(MatchState matchState, LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;

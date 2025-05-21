@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
-import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchPostResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
@@ -88,7 +88,7 @@ public class MatchController {
 	@PatchMapping("/updatePost/{postId}")
 	public ResponseEntity<MatchPostResponse> updatePost(
 		@PathVariable long postId,
-		@RequestBody @Valid UpdateMealPostRequest request,
+		@RequestBody @Valid UpdateMatchPostRequest request,
 		@RequestHeader("user-id") long userId
 	) {
 		return ResponseEntity.ok(matchService.updatePost(postId, userId, request));
