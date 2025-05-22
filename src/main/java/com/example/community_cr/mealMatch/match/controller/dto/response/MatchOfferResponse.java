@@ -26,8 +26,9 @@ public class MatchOfferResponse {
 	public static MatchOfferResponse of(List<MatchOffer> matchOffers, MatchPost matchPost) {
 		return MatchOfferResponse.builder()
 			.id(matchPost.getPlace().getId())
-			.name(matchPost.getPlace().getAddress())
-			.schedule(matchPost.getSchedule())
+			.name(matchPost.getPlace().getName())
+			.address(matchPost.getPlace().getAddress())
+			.schedule(matchPost.getFinalSchedule())
 			.matchList(matchOffers.stream()
 				.map(MatchOfferDto::from)
 				.toList())
