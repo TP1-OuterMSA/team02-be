@@ -10,17 +10,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
-import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMealPostRequest;
+import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchOfferResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.MatchPostResponse;
 import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceResponse;
 import com.example.community_cr.mealMatch.match.entity.MatchOffer;
+import com.example.community_cr.mealMatch.match.entity.MatchOfferNotification;
 import com.example.community_cr.mealMatch.match.entity.MatchPost;
 import com.example.community_cr.mealMatch.match.entity.MatchState;
 import com.example.community_cr.mealMatch.match.entity.Place;
+import com.example.community_cr.mealMatch.match.repository.MatchOfferNotificationRepository;
 import com.example.community_cr.mealMatch.match.repository.MatchOfferRepository;
 import com.example.community_cr.mealMatch.match.repository.MatchPostRepository;
 import com.example.community_cr.mealMatch.match.repository.PlaceRepository;
+import com.example.community_cr.mealMatch.notification.component.NotificationProducer;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 
@@ -36,6 +39,9 @@ public class MatchServiceImpl implements MatchService {
 	private final MatchPostRepository matchPostRepository;
 	private final PlaceRepository placeRepository;
 	private final UserRepository userRepository;
+	private final MatchOfferNotificationRepository matchOfferNotificationRepository;
+
+	private final NotificationProducer notificationProducer;
 
 	@Override
 	public MatchPostResponse saveMatchPost(long userId, MatchPostRequest matchPostRequest) {
@@ -52,14 +58,14 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public void offerMealMate(long userId, long mealPostId, LocalDateTime startSchedule, LocalDateTime endSchedule) {
-		if (matchOfferRepository.existsByUserIdAndMatchPostId(userId, mealPostId)) {
+	public void offerMealMate(long userId, long matchPostId, LocalDateTime startSchedule, LocalDateTime endSchedule) {
+		if (matchOfferRepository.existsByUserIdAndMatchPostId(userId, matchPostId)) {
 			throw new IllegalArgumentException("이미 신청한 식사 매칭 글입니다.");
 		}
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 정보가 존재하지 않습니다."));
 
-		MatchPost matchPost = matchPostRepository.findById(mealPostId)
+		MatchPost matchPost = matchPostRepository.findById(matchPostId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 식사 매칭 글 정보가 존재하지 않습니다."));
 
 		if (matchPost.getUser().getId() == userId) {
@@ -75,7 +81,14 @@ public class MatchServiceImpl implements MatchService {
 			.endSchedule(endSchedule)
 			.matchPost(matchPost)
 			.build();
-		matchOfferRepository.save(matchOffer);
+		matchOffer = matchOfferRepository.save(matchOffer);
+		String message = "새로운 신청이 들어왔습니다.";
+		String notificationId = matchPost.getUser().getId() + "_" + System.currentTimeMillis();
+		MatchOfferNotification matchOfferNotification = MatchOfferNotification.of(notificationId,
+			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
+		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
+
+		notificationProducer.sendNotification(matchOfferNotification);
 	}
 
 	@Override
@@ -91,11 +104,22 @@ public class MatchServiceImpl implements MatchService {
 			throw new IllegalArgumentException("이미 수락 또는 거절한 식사 요청입니다.");
 		}
 
+		String message;
 		if (matchState) {
 			matchOffer.updateMatchState(MatchState.ACCEPTED, LocalDateTime.now());
+			message = "요청이 승인되었습니다.";
 		} else {
 			matchOffer.updateMatchState(MatchState.REJECTED, LocalDateTime.now());
+			message = "요청이 거절되었습니다.";
 		}
+		matchOffer = matchOfferRepository.save(matchOffer);
+
+		String notificationId = matchOffer.getMatchPost().getUser().getId() + "_" + System.currentTimeMillis();
+		MatchOfferNotification matchOfferNotification = MatchOfferNotification.of(notificationId,
+			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
+		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
+
+		notificationProducer.sendNotification(matchOfferNotification);
 	}
 
 	@Override
@@ -114,8 +138,8 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public List<MatchOfferResponse> getMatchOffer(long userId, long mealPostId, long cursor, int count) {
-		MatchPost matchPost = matchPostRepository.findById(mealPostId)
+	public List<MatchOfferResponse> getMatchOffer(long userId, long matchPostId, long cursor, int count) {
+		MatchPost matchPost = matchPostRepository.findById(matchPostId)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식사 매칭 글 정보입니다."));
 
 		if (matchPost.getUser().getId() != userId) {
@@ -125,9 +149,9 @@ public class MatchServiceImpl implements MatchService {
 		PageRequest pageRequest = PageRequest.of(0, count);
 		Slice<MatchOffer> matchOffers;
 		if (cursor == 0) {
-			matchOffers = matchOfferRepository.findAllByMealPostIdOrderByCreatedAtDesc(mealPostId, pageRequest);
+			matchOffers = matchOfferRepository.findAllByMatchPostIdOrderByCreatedAtDesc(matchPostId, pageRequest);
 		} else {
-			matchOffers = matchOfferRepository.findAllByMealPostIdNextPagePosts(mealPostId, cursor, pageRequest);
+			matchOffers = matchOfferRepository.findAllByMatchPostIdNextPagePosts(matchPostId, cursor, pageRequest);
 		}
 
 		return matchOffers.stream()
@@ -149,19 +173,19 @@ public class MatchServiceImpl implements MatchService {
 	public List<MatchPostResponse> getAllPosts(String address, long cursor, int count) {
 		PageRequest pageRequest = PageRequest.of(0, count);
 		List<Long> placeIds = placeRepository.findAllPlaceIdByAddress(address);
-		Slice<MatchPost> mealPosts;
+		Slice<MatchPost> matchPosts;
 		if (cursor == 0) {
-			mealPosts = matchPostRepository.findAllByPlaceIdInOrderByCreatedAtDesc(placeIds, pageRequest);
+			matchPosts = matchPostRepository.findAllByPlaceIdInOrderByCreatedAtDesc(placeIds, pageRequest);
 		} else {
-			mealPosts = matchPostRepository.findNextPagePosts(placeIds, cursor, pageRequest);
+			matchPosts = matchPostRepository.findNextPagePosts(placeIds, cursor, pageRequest);
 		}
-		return mealPosts.stream()
+		return matchPosts.stream()
 			.map(MatchPostResponse::from)
 			.collect(Collectors.toList());
 	}
 
 	@Override
-	public MatchPostResponse updatePost(Long postId, Long userId, UpdateMealPostRequest request) {
+	public MatchPostResponse updatePost(Long postId, Long userId, UpdateMatchPostRequest request) {
 		MatchPost post = matchPostRepository.findById(postId)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식사 매칭 글 정보입니다. "));
 
