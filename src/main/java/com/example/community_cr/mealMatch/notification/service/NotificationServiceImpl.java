@@ -50,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
 	}
 
 	@Override
-	public String send(long receiverId, Object notification) {
+	public void send(long receiverId, Object notification) {
 		String id = receiverId + "_" + System.currentTimeMillis();
 
 		Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(receiverId + "_");
@@ -60,7 +60,6 @@ public class NotificationServiceImpl implements NotificationService {
 				sendToClient(emitter, id, notification);
 			}
 		);
-		return id;
 	}
 
 	private void sendToClient(SseEmitter emitter, String id, Object data) {

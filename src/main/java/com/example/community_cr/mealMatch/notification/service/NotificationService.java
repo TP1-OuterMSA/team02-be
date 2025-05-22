@@ -5,5 +5,5 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public interface NotificationService {
 	SseEmitter subscribe(Long id, String lastEventId);
 
-	String send(long receiverId, Object notification);
+	void send(long receiverId, Object notification);
 }

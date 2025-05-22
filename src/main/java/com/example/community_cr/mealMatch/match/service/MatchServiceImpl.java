@@ -23,8 +23,7 @@ import com.example.community_cr.mealMatch.match.repository.MatchOfferNotificatio
 import com.example.community_cr.mealMatch.match.repository.MatchOfferRepository;
 import com.example.community_cr.mealMatch.match.repository.MatchPostRepository;
 import com.example.community_cr.mealMatch.match.repository.PlaceRepository;
-import com.example.community_cr.mealMatch.notification.controller.dto.response.MatchOfferNotificationResponse;
-import com.example.community_cr.mealMatch.notification.service.NotificationService;
+import com.example.community_cr.mealMatch.notification.component.NotificationProducer;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 
@@ -42,7 +41,7 @@ public class MatchServiceImpl implements MatchService {
 	private final UserRepository userRepository;
 	private final MatchOfferNotificationRepository matchOfferNotificationRepository;
 
-	private final NotificationService notificationService;
+	private final NotificationProducer notificationProducer;
 
 	@Override
 	public MatchPostResponse saveMatchPost(long userId, MatchPostRequest matchPostRequest) {
@@ -84,12 +83,12 @@ public class MatchServiceImpl implements MatchService {
 			.build();
 		matchOffer = matchOfferRepository.save(matchOffer);
 		String message = "새로운 신청이 들어왔습니다.";
-		MatchOfferNotificationResponse notification = MatchOfferNotificationResponse.of(matchOffer, message,
-			LocalDateTime.now());
-		String notificationId = notificationService.send(matchPost.getUser().getId(), notification);
+		String notificationId = matchPost.getUser().getId() + "_" + System.currentTimeMillis();
 		MatchOfferNotification matchOfferNotification = MatchOfferNotification.of(notificationId,
-			matchOffer.getMatchPost().getUser().getId(), message, LocalDateTime.now(), matchOffer);
-		matchOfferNotificationRepository.save(matchOfferNotification);
+			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
+		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
+
+		notificationProducer.sendNotification(matchOfferNotification);
 	}
 
 	@Override
@@ -115,12 +114,12 @@ public class MatchServiceImpl implements MatchService {
 		}
 		matchOffer = matchOfferRepository.save(matchOffer);
 
-		MatchOfferNotificationResponse notification = MatchOfferNotificationResponse.of(matchOffer, message,
-			LocalDateTime.now());
-		String notificationId = notificationService.send(matchOffer.getMatchPost().getUser().getId(), notification);
+		String notificationId = matchOffer.getMatchPost().getUser().getId() + "_" + System.currentTimeMillis();
 		MatchOfferNotification matchOfferNotification = MatchOfferNotification.of(notificationId,
-			matchOffer.getMatchPost().getUser().getId(), message, LocalDateTime.now(), matchOffer);
-		matchOfferNotificationRepository.save(matchOfferNotification);
+			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
+		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
+
+		notificationProducer.sendNotification(matchOfferNotification);
 	}
 
 	@Override

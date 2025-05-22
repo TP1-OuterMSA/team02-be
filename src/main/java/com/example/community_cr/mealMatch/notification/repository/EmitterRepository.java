@@ -20,9 +20,14 @@ public class EmitterRepository {
 		emitters.remove(id);
 	}
 
-	public Map<String, SseEmitter> findAllStartWithById(String prefix) {
+	public Map<String, SseEmitter> findAllStartWithById(String userId) {
 		return emitters.entrySet().stream()
-			.filter(entry -> entry.getKey().startsWith(prefix))
+			.filter(entry -> entry.getKey().startsWith(userId))
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	public boolean existsByIdStartWith(String userId) {
+		return emitters.entrySet().stream()
+			.anyMatch(entry -> entry.getKey().startsWith(userId));
 	}
 }
