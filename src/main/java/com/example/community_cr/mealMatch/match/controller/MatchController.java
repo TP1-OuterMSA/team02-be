@@ -43,10 +43,9 @@ public class MatchController {
 	public ResponseEntity<Void> offerMealMate(
 		@RequestHeader("user-id") long userId,
 		@PathVariable long mealPostId,
-		@RequestParam("startSchedule") LocalDateTime startSchedule,
-		@RequestParam("endSchedule") LocalDateTime endSchedule
+		@RequestParam("content") String content
 	) {
-		matchService.offerMealMate(userId, mealPostId, startSchedule, endSchedule);
+		matchService.offerMealMate(userId, mealPostId, content);
 		return ResponseEntity.ok().build();
 	}
 
@@ -70,9 +69,10 @@ public class MatchController {
 	public ResponseEntity<Void> replyMealMateOffer(
 		@RequestHeader("user-id") long userId,
 		@PathVariable long matchOfferId,
-		@RequestParam("matchState") boolean matchState
+		@RequestParam("matchState") boolean matchState,
+		@RequestParam(value = "schedule", required = false) LocalDateTime schedule
 	) {
-		matchService.replyMealMateOffer(userId, matchOfferId, matchState);
+		matchService.replyMealMateOffer(userId, matchOfferId, matchState, schedule);
 		return ResponseEntity.ok().build();
 	}
 

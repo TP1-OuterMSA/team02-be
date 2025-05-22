@@ -12,9 +12,9 @@ import com.example.community_cr.mealMatch.match.controller.dto.response.PlaceRes
 public interface MatchService {
 	MatchPostResponse saveMatchPost(long userId, MatchPostRequest matchPostRequest);
 
-	void offerMealMate(long userId, long matchPostId, LocalDateTime startSchedule, LocalDateTime endSchedule);
+	void offerMealMate(long userId, long matchPostId, String content);
 
-	void replyMealMateOffer(long userId, long matchOfferId, boolean matchState);
+	void replyMealMateOffer(long userId, long matchOfferId, boolean matchState, LocalDateTime schedule);
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long cursor, int count);
 

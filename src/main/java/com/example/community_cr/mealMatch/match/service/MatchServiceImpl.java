@@ -2,6 +2,7 @@ package com.example.community_cr.mealMatch.match.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
@@ -58,7 +59,7 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public void offerMealMate(long userId, long matchPostId, LocalDateTime startSchedule, LocalDateTime endSchedule) {
+	public void offerMealMate(long userId, long matchPostId, String content) {
 		if (matchOfferRepository.existsByUserIdAndMatchPostId(userId, matchPostId)) {
 			throw new IllegalArgumentException("이미 신청한 식사 매칭 글입니다.");
 		}
@@ -77,8 +78,7 @@ public class MatchServiceImpl implements MatchService {
 			.createdAt(LocalDateTime.now())
 			.updatedAt(LocalDateTime.now())
 			.user(user)
-			.startSchedule(startSchedule)
-			.endSchedule(endSchedule)
+			.content(content)
 			.matchPost(matchPost)
 			.build();
 		matchOffer = matchOfferRepository.save(matchOffer);
@@ -92,7 +92,7 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public void replyMealMateOffer(long userId, long matchOfferId, boolean matchState) {
+	public void replyMealMateOffer(long userId, long matchOfferId, boolean matchState, LocalDateTime schedule) {
 		MatchOffer matchOffer = matchOfferRepository.findById(matchOfferId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 식사 메이트 신청 정보가 존재하지 않습니다."));
 
@@ -107,6 +107,7 @@ public class MatchServiceImpl implements MatchService {
 		String message;
 		if (matchState) {
 			matchOffer.updateMatchState(MatchState.ACCEPTED, LocalDateTime.now());
+			matchOffer.getMatchPost().updateMatchSchedule(schedule);
 			message = "요청이 승인되었습니다.";
 		} else {
 			matchOffer.updateMatchState(MatchState.REJECTED, LocalDateTime.now());
@@ -132,8 +133,11 @@ public class MatchServiceImpl implements MatchService {
 			matchOffers = matchOfferRepository.findAllByUserIdNextPagePosts(userId, cursor, pageRequest);
 		}
 
-		return matchOffers.stream()
-			.map(matchOffer -> MatchOfferResponse.of(matchOffer, MatchPostResponse.from(matchOffer.getMatchPost())))
+		Map<MatchPost, List<MatchOffer>> matchOffersByPlaceId = matchOffers.stream()
+			.collect(Collectors.groupingBy(MatchOffer::getMatchPost));
+
+		return matchOffersByPlaceId.entrySet().stream()
+			.map(entry -> MatchOfferResponse.of(entry.getValue(), entry.getKey()))
 			.toList();
 	}
 
@@ -154,8 +158,11 @@ public class MatchServiceImpl implements MatchService {
 			matchOffers = matchOfferRepository.findAllByMatchPostIdNextPagePosts(matchPostId, cursor, pageRequest);
 		}
 
-		return matchOffers.stream()
-			.map(matchOffer -> MatchOfferResponse.of(matchOffer, MatchPostResponse.from(matchOffer.getMatchPost())))
+		Map<MatchPost, List<MatchOffer>> matchOffersByPlaceId = matchOffers.stream()
+			.collect(Collectors.groupingBy(MatchOffer::getMatchPost));
+
+		return matchOffersByPlaceId.entrySet().stream()
+			.map(entry -> MatchOfferResponse.of(entry.getValue(), entry.getKey()))
 			.toList();
 	}
 

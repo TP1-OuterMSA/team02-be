@@ -2,6 +2,7 @@ package com.example.community_cr.mealMatch.match.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
 import com.example.community_cr.mealMatch.match.controller.dto.request.UpdateMatchPostRequest;
@@ -45,6 +46,9 @@ public class MatchPost {
 	@Column(nullable = false)
 	private String content;
 
+	@Builder.Default
+	private LocalDateTime finalSchedule = null;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "place_id")
 	private Place place;
@@ -75,5 +79,23 @@ public class MatchPost {
 		this.content = request.getContent() != null ? request.getContent() : this.content;
 		this.schedule = request.getSchedule() != null ? request.getSchedule() : this.schedule;
 		this.updatedAt = LocalDateTime.now();
+	}
+
+	public void updateMatchSchedule(LocalDateTime finalSchedule) {
+		this.finalSchedule = finalSchedule;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof MatchPost matchPost))
+			return false;
+		return Objects.equals(id, matchPost.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
 }
