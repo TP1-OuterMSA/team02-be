@@ -1,17 +1,22 @@
 package com.example.community_cr.message.controller.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class MessageRequest {
-    @NotNull
-    private Long receiverId;
+	@Positive
+	private long receiverId;
 
-    @NotNull @Size(min = 1, max = 1000)
-    private String content;
-
-    // getters/setters
-    public Long getReceiverId() { return receiverId; }
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
+	@NotNull
+	@Size(min = 1)
+	private String content;
 }

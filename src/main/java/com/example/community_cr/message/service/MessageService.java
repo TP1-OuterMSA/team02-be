@@ -1,11 +1,15 @@
 package com.example.community_cr.message.service;
 
-import com.example.community_cr.message.entity.Message;
 import java.util.List;
 
+import com.example.community_cr.message.controller.dto.MessageRequest;
+import com.example.community_cr.message.controller.dto.MessageResponse;
+
 public interface MessageService {
-    Message createMessage(Message message);
-    List<Message> fetchMessages(Long me, Long other, Long cursor, int count);
-    void deleteMessage(Long id);
+	MessageResponse createMessage(MessageRequest request, long sender);
+
+	List<MessageResponse> getMessages(Long me, Long other, Long cursor, int count);
+
+	void deleteMessage(long userId, long messageId);
 }
 
