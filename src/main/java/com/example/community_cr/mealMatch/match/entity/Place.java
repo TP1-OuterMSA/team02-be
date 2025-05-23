@@ -2,7 +2,6 @@ package com.example.community_cr.mealMatch.match.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,18 +40,4 @@ public class Place {
 	@Builder.Default
 	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
 	private List<MatchPost> matchPostList = new ArrayList<>();
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (!(o instanceof Place place))
-			return false;
-		return Objects.equals(id, place.id);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
 }

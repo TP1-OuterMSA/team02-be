@@ -3,6 +3,7 @@ package com.example.community_cr.mealMatch.match.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.example.community_cr.user.entity.User;
 
@@ -62,5 +63,19 @@ public class MatchOffer {
 	public void updateMatchState(MatchState matchState, LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 		this.matchState = matchState;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof MatchOffer matchOffer))
+			return false;
+		return Objects.equals(id, matchOffer.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
 }

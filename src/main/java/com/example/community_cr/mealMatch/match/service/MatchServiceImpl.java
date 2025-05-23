@@ -107,7 +107,11 @@ public class MatchServiceImpl implements MatchService {
 		String message;
 		if (matchState) {
 			matchOffer.updateMatchState(MatchState.ACCEPTED, LocalDateTime.now());
-			matchOffer.getMatchPost().updateMatchSchedule(schedule);
+			matchOffer.getMatchPost().updateFinalSchedule(schedule);
+			MatchOffer finalMatchOffer = matchOffer;
+			matchOffer.getMatchPost().getMatchOfferList().stream()
+				.filter(otherMatchOffer -> !otherMatchOffer.equals(finalMatchOffer))
+				.forEach(otherMatchOffer -> otherMatchOffer.updateMatchState(MatchState.REJECTED, LocalDateTime.now()));
 			message = "요청이 승인되었습니다.";
 		} else {
 			matchOffer.updateMatchState(MatchState.REJECTED, LocalDateTime.now());

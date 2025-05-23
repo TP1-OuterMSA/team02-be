@@ -81,7 +81,7 @@ public class MatchPost {
 		this.updatedAt = LocalDateTime.now();
 	}
 
-	public void updateMatchSchedule(LocalDateTime finalSchedule) {
+	public void updateFinalSchedule(LocalDateTime finalSchedule) {
 		this.finalSchedule = finalSchedule;
 	}
 
