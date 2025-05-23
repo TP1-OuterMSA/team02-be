@@ -27,10 +27,17 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Override
 	public SseEmitter subscribe(Long userId, String lastEventId) {
+		Map<String, SseEmitter> existsSseEmitters = emitterRepository.findAllStartWithById(userId + "_");
+		existsSseEmitters.forEach(
+			(key, emitter) -> {
+				// 데이터 전송
+				emitterRepository.deleteById(key);
+			});
+
 		String id = userId + "_" + System.currentTimeMillis();
 
 		SseEmitter emitter = emitterRepository.save(id, new SseEmitter(DEFAULT_TIMEOUT));
-
+		
 		emitter.onCompletion(() -> emitterRepository.deleteById(id));
 		emitter.onTimeout(() -> emitterRepository.deleteById(id));
 
