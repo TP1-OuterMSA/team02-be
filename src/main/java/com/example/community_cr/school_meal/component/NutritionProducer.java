@@ -1,6 +1,7 @@
 package com.example.community_cr.school_meal.component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,13 @@ public class NutritionProducer {
 	private final MealRepository mealRepository;
 	private final FoodRepository foodRepository;
 
-	public void sendMealItem(LocalDate date) {
-		List<Meal> meals = mealRepository.findByDayInfo(date.toString());
+	public void sendMealItem(LocalDate startDate, LocalDate endDate) {
+		List<String> dates = new ArrayList<>();
+		for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+			dates.add(date.toString());
+		}
+
+		List<Meal> meals = mealRepository.findAllByDayInfoIn(dates);
 		Set<Menu> menus = new HashSet<>();
 		for (Meal meal : meals) {
 			List<Menu> mealMenus = meal.getMealMenus().stream()
@@ -40,6 +46,7 @@ public class NutritionProducer {
 		List<String> foodNames = menus.stream()
 			.map(Menu::getName)
 			.toList();
+
 		List<Food> foods = foodRepository.findAllByFoodNameIn(foodNames);
 		sendAllMealItems(foods);
 	}

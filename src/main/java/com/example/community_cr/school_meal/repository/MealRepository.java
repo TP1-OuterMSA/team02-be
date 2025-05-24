@@ -11,5 +11,5 @@ import com.example.community_cr.school_meal.entity.Meal;
 public interface MealRepository extends JpaRepository<Meal, Long> {
 	Optional<Meal> findByDayInfoAndMealType(String date, MealType mealType);
 
-	List<Meal> findByDayInfo(String string);
+	List<Meal> findAllByDayInfoIn(List<String> string);
 }

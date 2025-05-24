@@ -1,12 +1,9 @@
-package com.example.community_cr.diet.entity;
+package com.example.community_cr.mealMatch.match.entity;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
 import com.example.community_cr.user.entity.User;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,7 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,35 +25,37 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Diet {
-
+public class MatchOffer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private LocalDate date;
-
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private MealType type;
+	private MatchState matchState;
 
-	@Builder.Default
-	@OneToMany(mappedBy = "diet", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<DietFood> foods = new ArrayList<>();
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
+
+	@Column(nullable = false)
+	private LocalDateTime startSchedule;
+
+	@Column(nullable = false)
+	private LocalDateTime endSchedule;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 
-	public static Diet of(User user, LocalDate date, MealType type) {
-		return Diet.builder()
-			.user(user)
-			.date(date)
-			.type(type)
-			.build();
-	}
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "match_post_id")
+	private MatchPost matchPost;
 
-	public void addFoods(List<DietFood> dietFoods) {
-		foods.addAll(dietFoods);
+	public void updateMatchState(MatchState matchState, LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+		this.matchState = matchState;
 	}
 }

@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.community_cr.common.config.AiApiConfig;
 import com.example.community_cr.common.service.AiApiService;
-import com.example.community_cr.diet.controller.dto.request.FoodRequest;
-import com.example.community_cr.common.exception.ApiErrorException;
 import com.example.community_cr.diet.controller.dto.request.api.ApiRequest;
 import com.example.community_cr.diet.controller.dto.response.FoodResponse;
 import com.example.community_cr.diet.controller.dto.response.api.FoodInfo;
@@ -45,21 +43,23 @@ public class FoodServiceImpl implements FoodService {
 		if (foodName.isEmpty()) {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
+		foodName = foodName.replaceAll("\\s+", "");
 		String aiApiFoodSystemMessage = String.format(aiApiConfig.getFoodSystemMessageFormat(), count);
 
 		ApiRequest apiRequest = new ApiRequest(aiApiConfig.getModel(), aiApiFoodSystemMessage, foodName);
 		String cleanedJson = aiApiService.getCleanedJsonFromAiApiRequest(apiRequest, aiApiConfig.getSearchFoodKey());
 
-		log.info(cleanedJson);
 		ObjectMapper mapper = new ObjectMapper();
 		List<FoodInfo> foodInfos;
 		try {
 			foodInfos = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
+			log.info("Json Processing Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 		if (foodInfos.isEmpty()) {
+			log.info("Food Info Empty Exception. cleanedJson = {}", cleanedJson);
 			throw new IllegalStateException("메뉴를 불러오는데 실패했습니다. 다시 시도해주세요.");
 		}
 
@@ -123,6 +123,10 @@ public class FoodServiceImpl implements FoodService {
 			throw new IllegalArgumentException("음식이 입력되지 않았습니다.");
 		}
 
+		foodNames = foodNames.stream()
+			.map(foodName -> foodName.replaceAll("\\s+", ""))
+			.toList();
+
 		List<String> existingFoodNames = foodRepository.findExistingFoodNames(foodNames);
 		return foodNames.stream()
 			.filter(foodName -> !existingFoodNames.contains(foodName))
@@ -141,9 +145,11 @@ public class FoodServiceImpl implements FoodService {
 			nutritionInfos = mapper.readValue(cleanedJson, new TypeReference<>() {
 			});
 		} catch (JsonProcessingException e) {
+			log.info("Json Processing Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalArgumentException("영양 성분을 분석하는데 실패했습니다. 다시 시도해주세요.");
 		}
 		if (nutritionInfos.isEmpty()) {
+			log.info("Nutrition Info Empty Exception. cleanedJson: {}", cleanedJson);
 			throw new IllegalArgumentException("영양 성분을 분석하는데 실패했습니다. 다시 시도해주세요.");
 		}
 
