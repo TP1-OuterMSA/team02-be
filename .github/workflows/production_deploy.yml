@@ -1,10 +1,9 @@
-name: Production Deploy
+name: CI/CD - team02-be Production
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
-      - 'main'
+      - production
 
 env:
   APP_ENV: production
@@ -15,8 +14,7 @@ permissions:
 
 jobs:
   deploy:
-    if: ${{ github.event.pull_request.merged && !contains(github.event.pull_request.labels.*.name, 'Skip:CD') }}
-    name: Deploy
+    name: Deploy to Production
     runs-on: ubuntu-22.04
     environment: production
 
@@ -24,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create applicaton.yml file
+      - name: Create application.yml file
         run: |
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YML_PROD }}" > src/main/resources/application.yml
@@ -43,11 +41,27 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
-          ECR_REPO: '${{ secrets.APP_NAME }}-${{ secrets.APP_ENV_PROD }}-repo'
+          ECR_REPO: '${{ secrets.APP_NAME }}-${{ env.APP_ENV }}-repo'
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-          DOCKER_TAG: ${{ env.APP_ENV }}
         run: |
-          docker build -f Dockerfile -t $ECR_REGISTRY/${{ env.ECR_REPO }}:$IMAGE_TAG -t $ECR_REGISTRY/${{ env.ECR_REPO }}:$DOCKER_TAG .
-          docker push $ECR_REGISTRY/${{ env.ECR_REPO }}:$IMAGE_TAG
-          docker push $ECR_REGISTRY/${{ env.ECR_REPO }}:$DOCKER_TAG
+          docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPO:${{ env.APP_ENV }} .
+          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:${{ env.APP_ENV }}
+
+      - name: Update Helm values.yaml in msa-infra-main
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/TP1-OuterMSA/msa-infra-main.git
+          cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
+
+          sudo apt-get update && sudo apt-get install -y yq
+          yq e ".image.tag = \"$IMAGE_TAG\"" -i values.yaml
+
+          git add values.yaml
+          git commit -m "ci(${{ secrets.APP_NAME }}): 이미지 태그 업데이트 - $IMAGE_TAG"
+          git push origin main
