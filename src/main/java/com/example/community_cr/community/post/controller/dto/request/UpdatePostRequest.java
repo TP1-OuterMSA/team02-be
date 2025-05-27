@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 public class UpdatePostRequest {
-	@Pattern(regexp = "^(?!\\s*$).+", message = "빈 문자열은 허용되지 않습니다.")
+	@Pattern(regexp = "(?s)^(?!\\s*$).+", message = "빈 문자열은 허용되지 않습니다.")
 	@Size(max = 50)
 	private String title;
 
-	@Pattern(regexp = "^(?!\\s*$).+", message = "빈 문자열은 허용되지 않습니다.")
+	@Pattern(regexp = "(?s)^(?!\\s*$).+", message = "빈 문자열은 허용되지 않습니다.")
 	@Size(max = 100)
 	private String content;
 
