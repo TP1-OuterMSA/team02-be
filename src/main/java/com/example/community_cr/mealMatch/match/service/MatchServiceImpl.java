@@ -137,6 +137,7 @@ public class MatchServiceImpl implements MatchService {
 		}
 
 		Map<MatchPost, List<MatchOffer>> matchOffersByPlaceId = matchOffers.stream()
+			.filter(matchOffer -> !(matchOffer.getMatchState().equals(MatchState.REJECTED)))
 			.collect(Collectors.groupingBy(MatchOffer::getMatchPost));
 
 		return matchOffersByPlaceId.entrySet().stream()
@@ -162,6 +163,7 @@ public class MatchServiceImpl implements MatchService {
 		}
 
 		Map<MatchPost, List<MatchOffer>> matchOffersByPlaceId = matchOffers.stream()
+			.filter(matchOffer -> !(matchOffer.getMatchState().equals(MatchState.REJECTED)))
 			.collect(Collectors.groupingBy(MatchOffer::getMatchPost));
 
 		return matchOffersByPlaceId.entrySet().stream()
