@@ -35,7 +35,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Save short SHA
-        id: short-sha
         run: echo "SHORT_SHA=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Build and push Docker image
@@ -45,10 +44,10 @@ jobs:
           docker build -f Dockerfile \
             -t $ECR_REPO:${{ github.sha }} \
             -t $ECR_REPO:production \
-            -t $ECR_REPO:${{ env.SHORT_SHA }} .
+            -t $ECR_REPO:$SHORT_SHA .
           docker push $ECR_REPO:${{ github.sha }}
           docker push $ECR_REPO:production
-          docker push $ECR_REPO:${{ env.SHORT_SHA }}
+          docker push $ECR_REPO:$SHORT_SHA
 
       - name: Checkout infrastructure repo
         uses: actions/checkout@v4
@@ -60,7 +59,7 @@ jobs:
       - name: Update Helm values.yaml with new image tag
         run: |
           cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
-          sed -i "s/tag: .*/tag: ${env.SHORT_SHA}/" values.yaml
+          sed -i "s/tag: .*/tag: $SHORT_SHA/" values.yaml
 
       - name: Commit and push changes to infrastructure repo
         run: |
@@ -68,5 +67,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
-          git diff-index --quiet HEAD || git commit -m "ci: update image tag for ${{ secrets.APP_NAME }} to ${{ env.SHORT_SHA }}"
+          git diff-index --quiet HEAD || git commit -m "ci: update image tag for ${{ secrets.APP_NAME }} to $SHORT_SHA"
           git push origin main
