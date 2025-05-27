@@ -2,8 +2,8 @@ package com.example.community_cr.message.service;
 
 import java.util.List;
 
-import com.example.community_cr.message.controller.dto.MessageRequest;
-import com.example.community_cr.message.controller.dto.MessageResponse;
+import com.example.community_cr.message.controller.dto.request.MessageRequest;
+import com.example.community_cr.message.controller.dto.response.MessageResponse;
 
 public interface MessageService {
 	MessageResponse createMessage(MessageRequest request, long sender);

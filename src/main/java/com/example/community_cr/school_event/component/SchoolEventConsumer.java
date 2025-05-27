@@ -18,8 +18,11 @@ public class SchoolEventConsumer {
 
 	@KafkaListener(topics = "event.web.crawler.updated", groupId = "meal-nutrition")
 	public void consume(EventMenu event) {
+		log.info("Kafka Saved Event : date: {}, title: {}", event.getDate(), event.getEventTitle());
+		if (schoolEventRepository.existsByDayInfoAndTitle(event.getDate(), event.getEventTitle())) {
+			return;
+		}
 		SchoolEvent schoolEvent = SchoolEvent.from(event);
-		log.info("Kafka Saved Event : date: {}, title: {}", schoolEvent.getDayInfo(), schoolEvent.getTitle());
 		schoolEventRepository.save(schoolEvent);
 	}
 

@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.community_cr.message.controller.dto.MessageRequest;
-import com.example.community_cr.message.controller.dto.MessageResponse;
+import com.example.community_cr.message.controller.dto.request.MessageRequest;
+import com.example.community_cr.message.controller.dto.response.MessageResponse;
 import com.example.community_cr.message.service.MessageService;
 
 import jakarta.validation.Valid;

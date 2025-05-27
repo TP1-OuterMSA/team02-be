@@ -7,10 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.community_cr.message.controller.dto.MessageRequest;
-import com.example.community_cr.message.controller.dto.MessageResponse;
+import com.example.community_cr.message.controller.dto.request.MessageRequest;
+import com.example.community_cr.message.controller.dto.response.MessageResponse;
 import com.example.community_cr.message.entity.Message;
+import com.example.community_cr.message.entity.MessageNotification;
+import com.example.community_cr.message.repository.MessageNotificationRepository;
 import com.example.community_cr.message.repository.MessageRepository;
+import com.example.community_cr.notification.component.NotificationProducer;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 
@@ -24,6 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class MessageServiceImpl implements MessageService {
 	private final MessageRepository messageRepository;
 	private final UserRepository userRepository;
+	private final MessageNotificationRepository messageNotificationRepository;
+
+	private final NotificationProducer notificationProducer;
 
 	@Override
 	public MessageResponse createMessage(MessageRequest messageRequest, long senderId) {
@@ -37,6 +43,15 @@ public class MessageServiceImpl implements MessageService {
 
 		Message message = Message.of(sender, receiver, messageRequest.getContent(), LocalDateTime.now());
 		message = messageRepository.save(message);
+
+		String notificationMessage = "새로운 쪽지가 왔습니다.";
+		String notificationId = message.getReceiver().getId() + "_" + System.currentTimeMillis();
+		MessageNotification messageNotification = MessageNotification.of(notificationId, sender, receiver,
+			message, notificationMessage, LocalDateTime.now());
+		messageNotification = messageNotificationRepository.save(messageNotification);
+
+		notificationProducer.sendNotification(messageNotification);
+
 		return MessageResponse.from(message);
 	}
 

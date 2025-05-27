@@ -2,7 +2,7 @@ package com.example.community_cr.store.component;
 
 import org.springframework.stereotype.Component;
 
-import com.example.community_cr.mealMatch.match.repository.PlaceRepository;
+import com.example.community_cr.mealMatch.repository.PlaceRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
