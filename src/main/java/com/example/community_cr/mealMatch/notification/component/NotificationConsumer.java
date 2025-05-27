@@ -24,17 +24,20 @@ public class NotificationConsumer {
 
 	private final NotificationService notificationService;
 
-	@KafkaListener(topics = "match.notification.created", groupId = "meal-nutrition")
+	@KafkaListener(topics = "match.notification.created", groupId = "notification-#{T(java.util.UUID).randomUUID().toString()}")
 	public void consume(MatchNotificationEvent matchNotificationEvent) {
+		log.info("Kafka 이벤트 수신 : {}", matchNotificationEvent.getNotificationId());
+
 		Optional<MatchOfferNotification> optionalMatchOfferNotification =
 			matchOfferNotificationRepository.findWithOfferById(matchNotificationEvent.getNotificationId());
 		if (optionalMatchOfferNotification.isEmpty()) {
+			log.info("해당하는 SSE Emitter 존재하지 않음");
 			return;
 		}
 		MatchOfferNotification matchOfferNotification = optionalMatchOfferNotification.get();
 
 		long receiverId = matchOfferNotification.getReceiver().getId();
-		if (!emitterRepository.existsByIdStartWith(String.valueOf(receiverId))) {
+		if (!emitterRepository.existsByIdStartWith(receiverId)) {
 			return;
 		}
 

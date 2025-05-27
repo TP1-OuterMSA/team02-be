@@ -40,4 +40,10 @@ public class Place {
 	@Builder.Default
 	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
 	private List<MatchPost> matchPostList = new ArrayList<>();
+
+	// public static Place from(StoreEvent storeEvent) {
+	// 	return Place.builder()
+	// 		.name(storeEvent.getStoreName())
+	// 		.build();
+	// }
 }

@@ -1,6 +1,5 @@
 package com.example.community_cr.mealMatch.match.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.community_cr.mealMatch.match.controller.dto.request.MatchPostRequest;
@@ -14,7 +13,7 @@ public interface MatchService {
 
 	void offerMealMate(long userId, long matchPostId, String content);
 
-	void replyMealMateOffer(long userId, long matchOfferId, boolean matchState, LocalDateTime schedule);
+	void replyMealMateOffer(long userId, long matchOfferId, boolean matchState);
 
 	List<MatchOfferResponse> getMatchOffer(long userId, long cursor, int count);
 

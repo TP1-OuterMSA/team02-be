@@ -11,23 +11,22 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class EmitterRepository {
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-	public SseEmitter save(String id, SseEmitter emitter) {
+	public void save(String id, SseEmitter emitter) {
 		emitters.put(id, emitter);
-		return emitter;
 	}
 
 	public void deleteById(String id) {
 		emitters.remove(id);
 	}
 
-	public Map<String, SseEmitter> findAllStartWithById(String userId) {
+	public Map<String, SseEmitter> findAllStartWithById(long userId) {
 		return emitters.entrySet().stream()
-			.filter(entry -> entry.getKey().startsWith(userId))
+			.filter(entry -> entry.getKey().startsWith(userId + "_"))
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
-	public boolean existsByIdStartWith(String userId) {
+	public boolean existsByIdStartWith(long userId) {
 		return emitters.entrySet().stream()
-			.anyMatch(entry -> entry.getKey().startsWith(userId));
+			.anyMatch(entry -> entry.getKey().startsWith(userId + "_"));
 	}
 }

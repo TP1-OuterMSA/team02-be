@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.example.community_cr.mealMatch.match.entity.MatchOfferNotification;
@@ -19,22 +18,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class NotificationServiceImpl implements NotificationService {
 	private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 	private final EmitterRepository emitterRepository;
 	private final MatchOfferNotificationRepository matchOfferNotificationRepository;
 
 	@Override
-	public SseEmitter subscribe(Long userId, String lastEventId) {
+	public SseEmitter subscribe(long userId) {
+		log.info("Subscribe ID : {}", userId);
 		String id = userId + "_" + System.currentTimeMillis();
 
-		SseEmitter emitter = emitterRepository.save(id, new SseEmitter(DEFAULT_TIMEOUT));
+		SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
 
-		emitter.onCompletion(() -> emitterRepository.deleteById(id));
-		emitter.onTimeout(() -> emitterRepository.deleteById(id));
+		emitter.onCompletion(() -> {
+			log.info("Completion SSE. User : {}", userId);
+			emitterRepository.deleteById(id);
+		});
+		emitter.onTimeout(() -> {
+			log.info("Time out SSE. User : {}", userId);
+			emitter.complete();
+			emitterRepository.deleteById(id);
+		});
+		emitter.onError(e -> {
+			log.info("Error SSE. User : {}, Message: {}", userId, e.getMessage());
+			emitter.complete();
+			emitterRepository.deleteById(id);
+		});
+
+		emitterRepository.save(id, emitter);
 
 		sendToClient(emitter, id, "EventStream Created. [userId=" + userId + "]");
+
+		return emitter;
+	}
+
+	@Override
+	public void sendPastEvents(long userId, String lastEventId) {
+		Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(userId);
 
 		List<MatchOfferNotification> notifications;
 		if (lastEventId.isEmpty()) {
@@ -43,17 +63,19 @@ public class NotificationServiceImpl implements NotificationService {
 			notifications = matchOfferNotificationRepository.findAllEventCacheStartWithIdAndGreaterThanLastEventId(
 				userId + "_", lastEventId);
 		}
-		notifications.forEach(
-			event -> sendToClient(emitter, event.getId(), MatchOfferNotificationResponse.from(event)));
 
-		return emitter;
+		sseEmitters.forEach(
+			(key, emitter) -> notifications.forEach(
+				event -> sendToClient(emitter, event.getId(), MatchOfferNotificationResponse.from(event)))
+		);
+
 	}
 
 	@Override
 	public void send(long receiverId, Object notification) {
 		String id = receiverId + "_" + System.currentTimeMillis();
 
-		Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(receiverId + "_");
+		Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(receiverId);
 		sseEmitters.forEach(
 			(key, emitter) -> {
 				// 데이터 전송
@@ -69,9 +91,8 @@ public class NotificationServiceImpl implements NotificationService {
 				.name("sse")
 				.data(data));
 		} catch (IOException exception) {
-			log.info("emitter id: {}", id);
+			log.info("SSE Emitter Exception ID: {}", id);
 			emitterRepository.deleteById(id);
-			throw new IllegalStateException("연결 오류!");
 		}
 	}
 }
