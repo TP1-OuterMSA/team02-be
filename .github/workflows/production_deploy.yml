@@ -38,20 +38,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Build, tag, and push Docker image
         env:
           ECR_REPO: '${{ secrets.APP_NAME }}-${{ env.APP_ENV }}-repo'
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPO:${{ env.APP_ENV }} .
-          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPO:${{ env.APP_ENV }}
+          docker build -f Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPO:${{ github.sha }} \
+            -t $ECR_REGISTRY/$ECR_REPO:production .
+          docker push $ECR_REGISTRY/$ECR_REPO:${{ github.sha }}
+          docker push $ECR_REGISTRY/$ECR_REPO:production
 
-      - name: Update Helm values.yaml in msa-infra-main
-        env:
-          IMAGE_TAG: ${{ github.sha }}
+      - name: Update Helm values.yaml using sed
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
@@ -59,9 +57,8 @@ jobs:
           git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/TP1-OuterMSA/msa-infra-main.git
           cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
 
-          sudo apt-get update && sudo apt-get install -y yq
-          yq e ".image.tag = \"$IMAGE_TAG\"" -i values.yaml
+          sed -i "s/tag:.*/tag: ${{ github.sha }}/" values.yaml
 
           git add values.yaml
-          git commit -m "ci(${{ secrets.APP_NAME }}): 이미지 태그 업데이트 - $IMAGE_TAG"
+          git commit -m "ci(${{ secrets.APP_NAME }}): 이미지 태그 업데이트 - ${{ github.sha }}"
           git push origin main
