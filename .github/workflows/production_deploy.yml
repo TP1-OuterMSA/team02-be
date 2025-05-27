@@ -1,4 +1,4 @@
-name: CI/CD - team02-be Production
+name: CI/CD - Production Deploy
 
 on:
   push:
@@ -16,16 +16,13 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-22.04
-    environment: production
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Create application.yml file
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML_PROD }}" > src/main/resources/application.yml
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,30 +32,41 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push Docker image
+      - name: Save short SHA
+        id: short-sha
+        run: echo "SHORT_SHA=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
         env:
-          ECR_REPO: '${{ secrets.APP_NAME }}-${{ env.APP_ENV }}-repo'
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/${{ secrets.APP_NAME }}-production-repo
         run: |
           docker build -f Dockerfile \
-            -t $ECR_REGISTRY/$ECR_REPO:${{ github.sha }} \
-            -t $ECR_REGISTRY/$ECR_REPO:production .
-          docker push $ECR_REGISTRY/$ECR_REPO:${{ github.sha }}
-          docker push $ECR_REGISTRY/$ECR_REPO:production
+            -t $ECR_REPO:${{ github.sha }} \
+            -t $ECR_REPO:production \
+            -t $ECR_REPO:${{ env.SHORT_SHA }} .
+          docker push $ECR_REPO:${{ github.sha }}
+          docker push $ECR_REPO:production
+          docker push $ECR_REPO:${{ env.SHORT_SHA }}
 
-      - name: Update Helm values.yaml using sed
+      - name: Checkout infrastructure repo
+        uses: actions/checkout@v4
+        with:
+          repository: TP1-OuterMSA/msa-infra-main
+          token: ${{ secrets.GH_PAT }}
+          path: msa-infra-main
+
+      - name: Update Helm values.yaml with new image tag
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-
-          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/TP1-OuterMSA/msa-infra-main.git
           cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
+          sed -i "s/tag: .*/tag: ${env.SHORT_SHA}/" values.yaml
 
-          sed -i "s/tag:.*/tag: ${{ github.sha }}/" values.yaml
-
-          git add values.yaml
-          git commit -m "ci(${{ secrets.APP_NAME }}): 이미지 태그 업데이트 - ${{ github.sha }}"
+      - name: Commit and push changes to infrastructure repo
+        run: |
+          cd msa-infra-main
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "ci: update image tag for ${{ secrets.APP_NAME }} to ${{ env.SHORT_SHA }}"
           git push origin main
