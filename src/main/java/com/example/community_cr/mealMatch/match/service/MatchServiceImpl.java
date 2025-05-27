@@ -92,7 +92,7 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public void replyMealMateOffer(long userId, long matchOfferId, boolean matchState, LocalDateTime schedule) {
+	public void replyMealMateOffer(long userId, long matchOfferId, boolean matchState) {
 		MatchOffer matchOffer = matchOfferRepository.findById(matchOfferId)
 			.orElseThrow(() -> new IllegalArgumentException("해당하는 식사 메이트 신청 정보가 존재하지 않습니다."));
 
@@ -107,7 +107,6 @@ public class MatchServiceImpl implements MatchService {
 		String message;
 		if (matchState) {
 			matchOffer.updateMatchState(MatchState.ACCEPTED, LocalDateTime.now());
-			matchOffer.getMatchPost().updateFinalSchedule(schedule);
 			MatchOffer finalMatchOffer = matchOffer;
 			matchOffer.getMatchPost().getMatchOfferList().stream()
 				.filter(otherMatchOffer -> !otherMatchOffer.equals(finalMatchOffer))

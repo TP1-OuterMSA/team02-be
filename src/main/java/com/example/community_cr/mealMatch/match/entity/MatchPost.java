@@ -46,9 +46,6 @@ public class MatchPost {
 	@Column(nullable = false)
 	private String content;
 
-	@Builder.Default
-	private LocalDateTime finalSchedule = null;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "place_id")
 	private Place place;
@@ -79,10 +76,6 @@ public class MatchPost {
 		this.content = request.getContent() != null ? request.getContent() : this.content;
 		this.schedule = request.getSchedule() != null ? request.getSchedule() : this.schedule;
 		this.updatedAt = LocalDateTime.now();
-	}
-
-	public void updateFinalSchedule(LocalDateTime finalSchedule) {
-		this.finalSchedule = finalSchedule;
 	}
 
 	@Override

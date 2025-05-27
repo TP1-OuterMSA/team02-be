@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.example.community_cr.mealMatch.match.entity.MatchOfferNotification;
 import com.example.community_cr.mealMatch.match.entity.MatchState;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,12 +16,15 @@ public class MatchOfferNotificationResponse {
 	private long matchPostId;
 	private MatchState matchState;
 	private String message;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 
 	public static MatchOfferNotificationResponse from(MatchOfferNotification matchOfferNotification) {
 		return MatchOfferNotificationResponse.builder()
 			.matchOfferId(matchOfferNotification.getMatchOffer().getId())
 			.matchState(matchOfferNotification.getMatchOffer().getMatchState())
+			.matchPostId(matchOfferNotification.getMatchPost().getId())
 			.message(matchOfferNotification.getMessage())
 			.createdAt(matchOfferNotification.getCreatedAt())
 			.build();

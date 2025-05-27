@@ -1,6 +1,5 @@
 package com.example.community_cr.mealMatch.match.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,10 +68,9 @@ public class MatchController {
 	public ResponseEntity<Void> replyMealMateOffer(
 		@RequestHeader("user-id") long userId,
 		@PathVariable long matchOfferId,
-		@RequestParam("matchState") boolean matchState,
-		@RequestParam(value = "schedule", required = false) LocalDateTime schedule
+		@RequestParam("matchState") boolean matchState
 	) {
-		matchService.replyMealMateOffer(userId, matchOfferId, matchState, schedule);
+		matchService.replyMealMateOffer(userId, matchOfferId, matchState);
 		return ResponseEntity.ok().build();
 	}
 

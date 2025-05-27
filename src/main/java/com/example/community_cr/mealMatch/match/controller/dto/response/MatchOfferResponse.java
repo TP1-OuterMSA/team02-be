@@ -28,7 +28,7 @@ public class MatchOfferResponse {
 			.id(matchPost.getPlace().getId())
 			.name(matchPost.getPlace().getName())
 			.address(matchPost.getPlace().getAddress())
-			.schedule(matchPost.getFinalSchedule())
+			.schedule(matchPost.getSchedule())
 			.matchList(matchOffers.stream()
 				.map(MatchOfferDto::from)
 				.toList())
