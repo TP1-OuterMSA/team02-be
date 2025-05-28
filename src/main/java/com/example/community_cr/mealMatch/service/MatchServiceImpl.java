@@ -120,7 +120,7 @@ public class MatchServiceImpl implements MatchService {
 		}
 		matchOffer = matchOfferRepository.save(matchOffer);
 
-		String notificationId = matchOffer.getMatchPost().getUser().getId() + "_" + System.currentTimeMillis();
+		String notificationId = matchOffer.getUser().getId() + "_" + System.currentTimeMillis();
 		MatchOfferNotification matchOfferNotification = MatchOfferNotification.of(notificationId,
 			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
 		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
