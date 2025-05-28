@@ -86,7 +86,6 @@ public class MessageServiceImpl implements MessageService {
 			.build();
 		messageNotification = messageNotificationRepository.save(messageNotification);
 
-		// notificationProducer.sendNotification(messageNotification);
 		eventPublisher.publish(messageNotification);
 	}
 
@@ -95,6 +94,16 @@ public class MessageServiceImpl implements MessageService {
 		Long effectiveCursor = (cursor == null || cursor <= 0) ? Long.MAX_VALUE : cursor;
 		List<Message> messages = messageRepository.findChatHistory(
 			me, other, effectiveCursor, PageRequest.of(0, count));
+		return messages.stream()
+			.map(MessageResponse::from)
+			.toList();
+	}
+
+	@Override
+	public List<MessageResponse> getMessages(Long me, Long cursor, int count) {
+		Long effectiveCursor = (cursor == null || cursor <= 0) ? Long.MAX_VALUE : cursor;
+		List<Message> messages = messageRepository.findChatHistory(
+			me, effectiveCursor, PageRequest.of(0, count));
 		return messages.stream()
 			.map(MessageResponse::from)
 			.toList();

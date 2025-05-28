@@ -12,6 +12,8 @@ public interface MessageService {
 
 	List<MessageResponse> getMessages(Long me, Long other, Long cursor, int count);
 
+	List<MessageResponse> getMessages(Long me, Long cursor, int count);
+
 	void deleteMessage(long userId, long messageId);
 }
 

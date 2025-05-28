@@ -49,6 +49,16 @@ public class MessageController {
 			service.getMessages(userId, otherId, cursor, count));
 	}
 
+	@GetMapping("/getMessages")
+	public ResponseEntity<List<MessageResponse>> listMessages(
+		@RequestHeader(name = "user-id") long userId,
+		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
+		@RequestParam(name = "count", required = false, defaultValue = "3") int count
+	) {
+		return ResponseEntity.ok(
+			service.getMessages(userId, cursor, count));
+	}
+
 	@DeleteMapping("/deleteMessage/{messageId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteMessage(
