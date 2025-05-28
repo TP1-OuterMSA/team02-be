@@ -13,6 +13,7 @@ import com.example.community_cr.message.entity.MessageNotification;
 import com.example.community_cr.message.repository.MessageNotificationRepository;
 import com.example.community_cr.notification.repository.EmitterRepository;
 import com.example.community_cr.notification.service.NotificationService;
+import com.example.kafka_schemas.MatchNotificationEvent;
 import com.example.kafka_schemas.NotificationEvent;
 
 import lombok.AllArgsConstructor;
@@ -29,19 +30,20 @@ public class NotificationConsumer {
 	private final NotificationService notificationService;
 
 	@KafkaListener(topics = "match.notification.created", groupId = "notification-#{T(java.util.UUID).randomUUID().toString()}")
-	public void consumeMatchNotification(NotificationEvent notificationEvent) {
+	public void consumeMatchNotification(MatchNotificationEvent notificationEvent) {
 		log.info("Kafka 이벤트 수신 : {}", notificationEvent.getNotificationId());
 
 		Optional<MatchOfferNotification> optionalMatchOfferNotification =
 			matchOfferNotificationRepository.findWithOfferById(notificationEvent.getNotificationId());
 		if (optionalMatchOfferNotification.isEmpty()) {
-			log.info("해당하는 SSE Emitter 존재하지 않음");
+			log.info("해당하는 알림이 존재하지 않음");
 			return;
 		}
 		MatchOfferNotification matchOfferNotification = optionalMatchOfferNotification.get();
 
 		long receiverId = matchOfferNotification.getReceiver().getId();
 		if (!emitterRepository.existsByIdStartWith(receiverId)) {
+			log.info("해당하는 SSE Emitter 존재하지 않음");
 			return;
 		}
 
@@ -58,13 +60,14 @@ public class NotificationConsumer {
 		Optional<MessageNotification> optionalMessageNotification =
 			messageNotificationRepository.findWithReceiverById(notificationEvent.getNotificationId());
 		if (optionalMessageNotification.isEmpty()) {
-			log.info("해당하는 SSE Emitter 존재하지 않음");
+			log.info("해당하는 알림이 존재하지 않음");
 			return;
 		}
 		MessageNotification messageNotification = optionalMessageNotification.get();
 
 		long receiverId = messageNotification.getReceiver().getId();
 		if (!emitterRepository.existsByIdStartWith(receiverId)) {
+			log.info("해당하는 SSE Emitter 존재하지 않음");
 			return;
 		}
 

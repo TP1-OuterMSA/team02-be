@@ -41,16 +41,4 @@ public class MessageNotification {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "receiver_id")
 	private User receiver;
-
-	public static MessageNotification of(String id, User sender, User receiver, Message message,
-		String notificationMessage, LocalDateTime createdAt) {
-		return MessageNotification.builder()
-			.id(id)
-			.sender(sender)
-			.receiver(receiver)
-			.message(message)
-			.notificationMessage(notificationMessage)
-			.createdAt(createdAt)
-			.build();
-	}
 }

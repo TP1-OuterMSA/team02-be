@@ -24,7 +24,8 @@ import com.example.community_cr.mealMatch.repository.MatchOfferNotificationRepos
 import com.example.community_cr.mealMatch.repository.MatchOfferRepository;
 import com.example.community_cr.mealMatch.repository.MatchPostRepository;
 import com.example.community_cr.mealMatch.repository.PlaceRepository;
-import com.example.community_cr.notification.component.NotificationProducer;
+import com.example.community_cr.message.service.MessageService;
+import com.example.community_cr.notification.component.NotificationEventPublisher;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 
@@ -42,7 +43,8 @@ public class MatchServiceImpl implements MatchService {
 	private final UserRepository userRepository;
 	private final MatchOfferNotificationRepository matchOfferNotificationRepository;
 
-	private final NotificationProducer notificationProducer;
+	private final MessageService messageService;
+	private final NotificationEventPublisher eventPublisher;
 
 	@Override
 	public MatchPostResponse saveMatchPost(long userId, MatchPostRequest matchPostRequest) {
@@ -88,7 +90,7 @@ public class MatchServiceImpl implements MatchService {
 			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
 		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
 
-		notificationProducer.sendNotification(matchOfferNotification);
+		eventPublisher.publish(matchOfferNotification);
 	}
 
 	@Override
@@ -123,7 +125,14 @@ public class MatchServiceImpl implements MatchService {
 			matchOffer.getMatchPost().getUser(), message, LocalDateTime.now(), matchOffer);
 		matchOfferNotification = matchOfferNotificationRepository.save(matchOfferNotification);
 
-		notificationProducer.sendNotification(matchOfferNotification);
+		eventPublisher.publish(matchOfferNotification);
+
+		if (matchState) {
+			long otherUserId = matchOffer.getUser().getId();
+			String messageContent = "매칭이 성사되었습니다. 자유롭게 대화를 나눠주세요!";
+			messageService.createMessage(messageContent, otherUserId, userId);
+			messageService.createMessage(messageContent, userId, otherUserId);
+		}
 	}
 
 	@Override

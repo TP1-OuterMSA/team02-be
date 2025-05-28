@@ -13,7 +13,7 @@ import com.example.community_cr.message.entity.Message;
 import com.example.community_cr.message.entity.MessageNotification;
 import com.example.community_cr.message.repository.MessageNotificationRepository;
 import com.example.community_cr.message.repository.MessageRepository;
-import com.example.community_cr.notification.component.NotificationProducer;
+import com.example.community_cr.notification.component.NotificationEventPublisher;
 import com.example.community_cr.user.entity.User;
 import com.example.community_cr.user.repository.UserRepository;
 
@@ -29,7 +29,7 @@ public class MessageServiceImpl implements MessageService {
 	private final UserRepository userRepository;
 	private final MessageNotificationRepository messageNotificationRepository;
 
-	private final NotificationProducer notificationProducer;
+	private final NotificationEventPublisher eventPublisher;
 
 	@Override
 	public MessageResponse createMessage(MessageRequest messageRequest, long senderId) {
@@ -46,13 +46,48 @@ public class MessageServiceImpl implements MessageService {
 
 		String notificationMessage = "새로운 쪽지가 왔습니다.";
 		String notificationId = message.getReceiver().getId() + "_" + System.currentTimeMillis();
-		MessageNotification messageNotification = MessageNotification.of(notificationId, sender, receiver,
-			message, notificationMessage, LocalDateTime.now());
+		MessageNotification messageNotification = MessageNotification.builder()
+			.id(notificationId)
+			.sender(sender)
+			.receiver(receiver)
+			.message(message)
+			.notificationMessage(notificationMessage)
+			.createdAt(LocalDateTime.now())
+			.build();
 		messageNotification = messageNotificationRepository.save(messageNotification);
 
-		notificationProducer.sendNotification(messageNotification);
+		eventPublisher.publish(messageNotification);
 
 		return MessageResponse.from(message);
+	}
+
+	@Override
+	public void createMessage(String content, long senderId, long receiverId) {
+		if (receiverId == senderId) {
+			return;
+		}
+		User sender = userRepository.findById(senderId)
+			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 정보가 없습니다."));
+		User receiver = userRepository.findById(receiverId)
+			.orElseThrow(() -> new IllegalArgumentException("해당하는 사용자 정보가 없습니다."));
+
+		Message message = Message.of(sender, receiver, content, LocalDateTime.now());
+		message = messageRepository.save(message);
+
+		String notificationMessage = "새로운 쪽지가 왔습니다.";
+		String notificationId = message.getReceiver().getId() + "_" + System.currentTimeMillis();
+		MessageNotification messageNotification = MessageNotification.builder()
+			.id(notificationId)
+			.sender(sender)
+			.receiver(receiver)
+			.message(message)
+			.notificationMessage(notificationMessage)
+			.createdAt(LocalDateTime.now())
+			.build();
+		messageNotification = messageNotificationRepository.save(messageNotification);
+
+		// notificationProducer.sendNotification(messageNotification);
+		eventPublisher.publish(messageNotification);
 	}
 
 	@Override

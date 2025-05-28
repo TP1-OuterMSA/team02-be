@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "MatchNotificationEvent",
+  "namespace": "com.example.kafka_schemas",
+  "fields": [
+    {
+      "name": "notificationId",
+      "type": "string"
+    }
+  ]
+}
