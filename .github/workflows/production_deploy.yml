@@ -1,9 +1,9 @@
-name: CI/CD - Production Deploy
+name: Production Deploy
 
 on:
   push:
     branches:
-      - production
+      - 'production'
 
 env:
   APP_ENV: production
@@ -14,15 +14,22 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy to Production
+    name: Deploy
     runs-on: ubuntu-22.04
+    environment: production
 
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create application.yml from secret
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML_PROD }}" > src/main/resources/application.yml
+
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -32,40 +39,47 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Save short SHA
-        run: echo "SHORT_SHA=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+        id: short-sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
-      - name: Build and push Docker image
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
-          ECR_REPO: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/${{ secrets.APP_NAME }}-production-repo
+          ECR_REPO: ${{ secrets.APP_NAME }}-${{ env.APP_ENV }}-repo
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          DOCKER_TAG: ${{ env.APP_ENV }}
         run: |
           docker build -f Dockerfile \
-            -t $ECR_REPO:${{ github.sha }} \
-            -t $ECR_REPO:production \
-            -t $ECR_REPO:$SHORT_SHA .
-          docker push $ECR_REPO:${{ github.sha }}
-          docker push $ECR_REPO:production
-          docker push $ECR_REPO:$SHORT_SHA
+            -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPO:$DOCKER_TAG \
+            -t $ECR_REGISTRY/$ECR_REPO:sha-${SHORT_SHA} .
+          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:$DOCKER_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:sha-${SHORT_SHA}
 
-      - name: Checkout infrastructure repo
-        uses: actions/checkout@v4
+      - name: Checkout infrastructure repository
+        uses: actions/checkout@v3
         with:
           repository: TP1-OuterMSA/msa-infra-main
-          token: ${{ secrets.GH_PAT }}
           path: msa-infra-main
+          token: ${{ secrets.GH_PAT }}
 
-      - name: Update Helm values.yaml with new image tag
+      - name: Update image tag in Helm chart
         run: |
           cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
-          sed -i "s/tag: .*/tag: $SHORT_SHA/" values.yaml
+          sed -i "s/tag: \"production\"/tag: \"sha-${SHORT_SHA}\"/g" values.yaml
+
 
       - name: Commit and push changes to infrastructure repo
         run: |
           cd msa-infra-main
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git add .
-          git diff-index --quiet HEAD || git commit -m "ci: update image tag for ${{ secrets.APP_NAME }} to $SHORT_SHA"
-          git push origin main
+          git diff-index --quiet HEAD || git commit -m "Update ${{ secrets.APP_NAME }} image tag to sha-${SHORT_SHA}"
+          git push || echo "No changes to push"
