@@ -33,14 +33,14 @@ public class MatchController {
 
 	@PostMapping("/save")
 	public ResponseEntity<MatchPostResponse> saveMatchPost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestBody @Valid MatchPostRequest matchPostRequest) {
 		return ResponseEntity.ok(matchService.saveMatchPost(userId, matchPostRequest));
 	}
 
 	@PostMapping("/offer/{mealPostId}")
 	public ResponseEntity<Void> offerMealMate(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long mealPostId,
 		@RequestParam("content") String content
 	) {
@@ -50,7 +50,7 @@ public class MatchController {
 
 	@GetMapping("/getOffers")
 	public ResponseEntity<List<MatchOfferResponse>> getMatchOffer(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam(value = "mealPostId", required = false) Optional<Long> mealPostId,
 		@RequestParam(value = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(value = "count", required = false, defaultValue = "3") int count
@@ -66,7 +66,7 @@ public class MatchController {
 
 	@PatchMapping("/reply/{matchOfferId}")
 	public ResponseEntity<Void> replyMealMateOffer(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long matchOfferId,
 		@RequestParam("matchState") boolean matchState
 	) {
@@ -87,7 +87,7 @@ public class MatchController {
 	public ResponseEntity<MatchPostResponse> updatePost(
 		@PathVariable long postId,
 		@RequestBody @Valid UpdateMatchPostRequest request,
-		@RequestHeader("user-id") long userId
+		@RequestHeader("userId") long userId
 	) {
 		return ResponseEntity.ok(matchService.updatePost(postId, userId, request));
 	}
@@ -95,7 +95,7 @@ public class MatchController {
 	@DeleteMapping("/deletePost/{postId}")
 	public ResponseEntity<Void> deletePost(
 		@PathVariable long postId,
-		@RequestHeader("user-id") long userId
+		@RequestHeader("userId") long userId
 	) {
 		matchService.deletePost(postId, userId);
 		return ResponseEntity.noContent().build();

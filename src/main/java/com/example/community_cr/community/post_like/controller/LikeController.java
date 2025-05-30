@@ -19,7 +19,7 @@ public class LikeController {
 
 	@PostMapping("/like/{postId}")
 	public ResponseEntity<Void> like(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable(name = "postId") long postId) {
 		likeService.likePost(userId, postId);
 		return ResponseEntity.ok().build();
@@ -27,7 +27,7 @@ public class LikeController {
 
 	@PostMapping("/unlike/{postId}")
 	public ResponseEntity<Void> unlike(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable(name = "postId") long postId) {
 		likeService.unlikePost(userId, postId);
 		return ResponseEntity.ok().build();

@@ -20,7 +20,7 @@ public class CommentLikeController {
 
 	@PostMapping("/comment/like/{commentId}")
 	public ResponseEntity<Void> likeComment(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable(name = "commentId") long commentId) {
 		commentLikeService.likeComment(userId, commentId);
 		return ResponseEntity.ok().build();
@@ -28,7 +28,7 @@ public class CommentLikeController {
 
 	@PostMapping("/comment/unlike/{commentId}")
 	public ResponseEntity<Void> unlikeComment(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable(name = "commentId") long commentId) {
 		commentLikeService.unlikeComment(userId, commentId);
 		return ResponseEntity.ok().build();
