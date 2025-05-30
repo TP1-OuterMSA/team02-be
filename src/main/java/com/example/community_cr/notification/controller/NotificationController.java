@@ -21,14 +21,14 @@ public class NotificationController {
 
 	@GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter subscribe(
-		@RequestHeader(value = "user-id") long userId
+		@RequestHeader(value = "userId") long userId
 	) {
 		return notificationService.subscribe(userId);
 	}
 
 	@GetMapping("/past")
 	public void getPastNotification(
-		@RequestHeader(value = "user-id") long userId,
+		@RequestHeader(value = "userId") long userId,
 		@RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
 	) {
 		notificationService.sendPastEvents(userId, lastEventId);

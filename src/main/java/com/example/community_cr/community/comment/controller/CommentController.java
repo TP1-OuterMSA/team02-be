@@ -29,7 +29,7 @@ public class CommentController {
 
 	@PostMapping("/add/{postId}")
 	public ResponseEntity<CommentResponse> addComment(
-		@RequestHeader("user-id") final long userId,
+		@RequestHeader("userId") final long userId,
 		@PathVariable final long postId,
 		@RequestBody @Valid CommentRequest commentRequest) {
 		Optional<CommentResponse> commentResponse = commentService.saveComment(userId, postId, commentRequest);
@@ -39,7 +39,7 @@ public class CommentController {
 
 	@PatchMapping("/update/{commentId}")
 	public ResponseEntity<CommentResponse> updateComment( //프론트에서 댓글의 정보 받고 싶으면
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long commentId, //아이디와
 		@RequestBody @Valid UpdateCommentRequest request) { //수정할 내용 받아서
 		Optional<CommentResponse> commentResponse = commentService.updateComment(userId, commentId, request);
@@ -50,7 +50,7 @@ public class CommentController {
 
 	@DeleteMapping("/delete/{commentId}")
 	public ResponseEntity<CommentResponse> deleteComment(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long commentId) {
 		commentService.deleteComment(userId, commentId);
 		return ResponseEntity.noContent().build();

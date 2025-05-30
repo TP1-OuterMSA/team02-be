@@ -35,7 +35,7 @@ public class CommunityController {
 
 	@PostMapping("/save")
 	public ResponseEntity<PostDetailResponse> savePost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestPart(name = "request") @Valid final PostRequest postRequest,
 		@RequestPart(value = "image") final MultipartFile image) {
 		Optional<PostDetailResponse> postDetailResponse = communityService.createCommunityPost(userId, postRequest,
@@ -46,7 +46,7 @@ public class CommunityController {
 
 	@PatchMapping("/update/{postId}")
 	public ResponseEntity<PostDetailResponse> updatePost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long postId,
 		@RequestPart(name = "request", required = false) @Valid final Optional<UpdatePostRequest> updatePostRequest,
 		@RequestPart(value = "image", required = false) final Optional<MultipartFile> image) {
@@ -65,7 +65,7 @@ public class CommunityController {
 
 	@DeleteMapping("/delete/{postId}")
 	public ResponseEntity<Void> deletePost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long postId) {
 		communityService.deletePost(userId, postId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -74,7 +74,7 @@ public class CommunityController {
 
 	@GetMapping("/getPosts")
 	public ResponseEntity<List<PostResponse>> getPosts(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(name = "count", required = false, defaultValue = "4") int count,
 		@RequestParam(name = "filter", required = false, defaultValue = "ALL") PostFilterType postFilterType) {
@@ -84,7 +84,7 @@ public class CommunityController {
 
 	@GetMapping("/getPost/{postId}")
 	public ResponseEntity<PostDetailResponse> getPost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long postId) {
 		Optional<PostDetailResponse> postDetailResponse = communityService.findCommunityPostById(userId, postId);
 		return ResponseEntity.ok(
