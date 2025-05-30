@@ -1,5 +1,4 @@
-ide: jetbrains/qodana-jvm-community:2024.1
-
+ide: jetbrains/qodana-jvm:2024.1   
 version: "1.0"
 profile:
   name: qodana.starter
