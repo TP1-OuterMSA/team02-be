@@ -20,7 +20,7 @@ public class UserController {
 
 	@GetMapping("/getRecommendKcal")
 	public ResponseEntity<Double> getRecommendKcal(
-		@RequestHeader("user-id") long userId
+		@RequestHeader("userId") long userId
 	) {
 		double recommendKcal = userService.getRecommendKcal(userId)
 			.orElseThrow(IllegalArgumentException::new);
@@ -29,10 +29,17 @@ public class UserController {
 
 	@PatchMapping("/updateKcal")
 	public ResponseEntity<Void> updateKcal(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("kcal") double kcal
 	) {
 		userService.updateKcal(userId, kcal);
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/getMyId")
+	public ResponseEntity<Long> getMyId(
+		@RequestHeader("userId") long userId
+	) {
+		return ResponseEntity.ok(userId);
 	}
 }
