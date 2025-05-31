@@ -35,4 +35,11 @@ public class UserController {
 		userService.updateKcal(userId, kcal);
 		return ResponseEntity.ok().build();
 	}
+
+	@GetMapping("/getMyId")
+	public ResponseEntity<Long> getMyId(
+		@RequestHeader("userId") long userId
+	) {
+		return ResponseEntity.ok(userId);
+	}
 }

@@ -31,7 +31,7 @@ public class MessageController {
 	@PostMapping("/createMessage")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<MessageResponse> createMessage(
-		@RequestHeader(name = "user-id") long sender,
+		@RequestHeader("userId") long sender,
 		@RequestBody @Valid MessageRequest req
 	) {
 		return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,7 +40,7 @@ public class MessageController {
 
 	@GetMapping("/getMessages/{otherId}")
 	public ResponseEntity<List<MessageResponse>> listMessages(
-		@RequestHeader(name = "user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long otherId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(name = "count", required = false, defaultValue = "3") int count
@@ -51,7 +51,7 @@ public class MessageController {
 
 	@GetMapping("/getMessages")
 	public ResponseEntity<List<MessageResponse>> listMessages(
-		@RequestHeader(name = "user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor,
 		@RequestParam(name = "count", required = false, defaultValue = "3") int count
 	) {
@@ -62,7 +62,7 @@ public class MessageController {
 	@DeleteMapping("/deleteMessage/{messageId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteMessage(
-		@RequestHeader(name = "user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long messageId) {
 		service.deleteMessage(userId, messageId);
 	}
