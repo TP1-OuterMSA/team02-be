@@ -7,79 +7,59 @@ on:
 
 env:
   APP_ENV: production
+  AWS_REGION: ap-northeast-2
+  ECR_REPO: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team02-be-production-repo
+  INFRA_REPO: https://github.com/TP1-OuterMSA/msa-infra-main.git
+  SERVICE_PATH: charts/services/team02-be
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   deploy:
-    name: Deploy
+    name: Build & Deploy
     runs-on: ubuntu-22.04
-    environment: production
 
     steps:
-      - name: Checkout
+      - name: Checkout Source Repo
         uses: actions/checkout@v4
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create application.yml from secret
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML_PROD }}" > src/main/resources/application.yml
-
+      - name: Set short SHA
+        id: vars
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin ${{ env.ECR_REPO }}
 
-      - name: Save short SHA
-        id: short-sha
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t team02-be .
+          docker tag team02-be:latest ${{ env.ECR_REPO }}:sha-${SHORT_SHA}
+          docker push ${{ env.ECR_REPO }}:sha-${SHORT_SHA}
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Clone Infra Repo and Update Helm Tag
         env:
-          ECR_REPO: ${{ secrets.APP_NAME }}-${{ env.APP_ENV }}-repo
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          DOCKER_TAG: ${{ env.APP_ENV }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          docker build -f Dockerfile \
-            -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPO:$DOCKER_TAG \
-            -t $ECR_REGISTRY/$ECR_REPO:sha-${SHORT_SHA} .
-          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPO:$DOCKER_TAG
-          docker push $ECR_REGISTRY/$ECR_REPO:sha-${SHORT_SHA}
+          git clone https://${GH_PAT}@github.com/TP1-OuterMSA/msa-infra-main.git
+          cd msa-infra-main/charts/services/team02-be
 
-      - name: Checkout infrastructure repository
-        uses: actions/checkout@v3
-        with:
-          repository: TP1-OuterMSA/msa-infra-main
-          path: msa-infra-main
-          token: ${{ secrets.GH_PAT }}
+          # SHA로 이미지 태그 변경
+          sed -i "s/tag: \".*\"/tag: \"sha-${SHORT_SHA}\"/" values.yaml
 
-      - name: Update image tag in Helm chart
-        run: |
-          cd msa-infra-main/charts/services/${{ secrets.APP_NAME }}
-          sed -i "s/tag: \"production\"/tag: \"sha-${SHORT_SHA}\"/g" values.yaml
+          # Git 설정 및 push
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
 
-
-      - name: Commit and push changes to infrastructure repo
-        run: |
-          cd msa-infra-main
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git diff-index --quiet HEAD || git commit -m "Update ${{ secrets.APP_NAME }} image tag to sha-${SHORT_SHA}"
-          git push || echo "No changes to push"
+          git add values.yaml
+          git commit -m "chore(team02-be): update image tag to sha-${SHORT_SHA}"
+          git push https://${GH_PAT}@github.com/TP1-OuterMSA/msa-infra-main.git HEAD:main
