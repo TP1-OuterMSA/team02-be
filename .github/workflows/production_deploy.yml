@@ -5,6 +5,7 @@ on:
     branches:
       - 'production'
 
+
 env:
   APP_ENV: production
   AWS_REGION: ap-northeast-2
