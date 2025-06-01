@@ -20,7 +20,7 @@ public class BlockController {
 
 	@PatchMapping("/block/{postId}")
 	public ResponseEntity<Void> blockPost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long postId) {
 		blockService.blockPost(userId, postId);
 		return ResponseEntity.noContent().build();
@@ -28,7 +28,7 @@ public class BlockController {
 
 	@PatchMapping("/unblock/{postId}")
 	public ResponseEntity<PostResponse> unblockPost(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@PathVariable long postId) {
 		PostResponse postResponse = blockService.unblockPost(userId, postId)
 			.orElseThrow(IllegalArgumentException::new);

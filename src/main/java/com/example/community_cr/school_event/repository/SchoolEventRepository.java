@@ -23,4 +23,6 @@ public interface SchoolEventRepository extends JpaRepository<SchoolEvent, Long> 
 		    ORDER BY se.dayInfo DESC
 		""")
 	Slice<SchoolEvent> findAllByCursorOrderByDayInfoDesc(@Param("cursor") long cursor, PageRequest pageRequest);
+
+	boolean existsByDayInfoAndTitle(String date, String eventTitle);
 }

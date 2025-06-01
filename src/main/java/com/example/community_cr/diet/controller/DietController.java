@@ -42,7 +42,7 @@ public class DietController {
 
 	@PostMapping("/saveDiet")
 	public ResponseEntity<DietResponse> saveDiet(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestBody @Valid DietRequest dto
 	) {
 		foodService.saveDietNutrition(dto.getFoodNames());
@@ -53,7 +53,7 @@ public class DietController {
 
 	@GetMapping("/getDiet")
 	public ResponseEntity<DietResponse> getDiet(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("dietId") long dietId
 	) {
 		Optional<DietResponse> response = dietService.getDiet(userId, dietId);
@@ -63,7 +63,7 @@ public class DietController {
 
 	@GetMapping("/getDiets")
 	public ResponseEntity<List<DietResponse>> getDiets(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam(name = "date") LocalDate date
 	) {
 		return ResponseEntity.ok(
@@ -82,7 +82,7 @@ public class DietController {
 
 	@GetMapping("/getDietDates")
 	public ResponseEntity<List<String>> getDietDates(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("month") @DateTimeFormat(pattern = "yyyy-MM") YearMonth month
 	) {
 		List<LocalDate> dates = dietService.getDietDates(userId, month);
@@ -103,7 +103,7 @@ public class DietController {
 
 	@DeleteMapping("/deleteDiet")
 	public ResponseEntity<Void> deleteDiet(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("dietId") long dietId
 	) {
 		dietService.deleteDiet(userId, dietId);
@@ -112,7 +112,7 @@ public class DietController {
 
 	@DeleteMapping("/deleteDietFood")
 	public ResponseEntity<Void> deleteDietFood(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("dietFoodId") long dietFoodId
 	) {
 		dietService.deleteDietFood(userId, dietFoodId);
@@ -121,7 +121,7 @@ public class DietController {
 
 	@GetMapping("/analyze")
 	public ResponseEntity<NutritionAnalysisResponse> analyzeNutrition(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 	) {
 		Optional<NutritionAnalysisResponse> response = dietService.analyzeNutrition(userId, date);
@@ -131,7 +131,7 @@ public class DietController {
 
 	@GetMapping("/analyzeDay")
 	public ResponseEntity<DayNutritionAnalysisResponse> analyzeDayNutrition(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 		@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
 	) {
@@ -142,7 +142,7 @@ public class DietController {
 
 	@GetMapping("/weekly-nutrition")
 	public ResponseEntity<WeeklyNutritionResponse> getWeeklyNutrition(
-		@RequestHeader("user-id") long userId,
+		@RequestHeader("userId") long userId,
 		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
 		@RequestParam(name = "count", required = false, defaultValue = "7") int count
 	) {
