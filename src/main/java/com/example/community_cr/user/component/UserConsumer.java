@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserConsumer {
 	private final UserRepository userRepository;
 
-	@KafkaListener(topics = "user.event", groupId = "meal-nutrition")
+	@KafkaListener(topics = "user.event", groupId = "meal-user")
 	public void consumeSignup(UserEvent event) {
 		log.info("Kafka User Event 수신 ID : {}, User Name : {}, Email : {}", event.getId(), event.getUsername(),
 			event.getEmail());
