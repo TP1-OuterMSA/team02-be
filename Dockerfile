@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY . .
 
+
 RUN ./gradlew clean build -x test
 
 RUN ls -la /app/build/libs/
